@@ -20,6 +20,8 @@
     --warn: #ffaa00;
     --danger: #ff4466;
     --border: rgba(0, 255, 136, 0.25);
+    --neon: #00ff88;
+    --neon-dim: #006633;
   }
   html, body {
     height: 100%;
@@ -89,6 +91,27 @@
     font-size: 12px; color: var(--text-dim);
     line-height: 1.8;
   }
+  .update-notice {
+    margin-top: 18px;
+    padding: 10px 16px;
+    border: 1px solid var(--neon-dim);
+    border-radius: 6px;
+    background: rgba(0, 255, 136, 0.05);
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    max-width: 460px;
+  }
+  .update-notice .update-title {
+    color: var(--green-bright);
+    font-size: 12px;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  .update-notice ul {
+    margin: 0; padding-left: 16px;
+  }
+  .update-notice li { margin-bottom: 2px; }
 
   /* ============ 游戏主屏 ============ */
   #game-screen {
@@ -172,6 +195,25 @@
   .attr-row.money .val { color: var(--warn); }
   .attr-row.stress .fill { background: linear-gradient(90deg, #661a00, #ff4466); }
   .attr-row.stress .val { color: var(--danger); }
+  /* 成绩记录区 */
+  .attr-row.score-latest .fill { background: linear-gradient(90deg, #1f5a3a, #7fffaf); }
+  .attr-row.score-latest .val { color: #7fffaf; font-weight: bold; }
+  .score-meta { font-size: 11px; }
+  .score-history {
+    margin-top: 4px; padding: 4px 6px;
+    background: rgba(0,0,0,0.25); border-radius: 4px;
+    max-height: 96px; overflow-y: auto;
+  }
+  .score-h-item {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 10px; padding: 1px 0; color: var(--text-dim);
+  }
+  .score-h-item .score-h-ym { width: 56px; }
+  .score-h-item .score-h-score { color: #b8f5d0; min-width: 28px; text-align: right; }
+  .score-h-item .diff { min-width: 28px; text-align: right; }
+  .score-h-item .diff.up { color: #7fcf7f; }
+  .score-h-item .diff.down { color: #cf7f7f; }
+  .score-h-item .diff.flat { color: var(--text-dim); }
   .attr-section { margin-bottom: 12px; }
   .attr-section-title {
     font-size: 10px; color: var(--text-dim);
@@ -187,8 +229,9 @@
     overflow: hidden;
   }
   .scene-bg {
-    height: 38%;
-    min-height: 120px;
+    flex: 0 0 90px;
+    height: 90px;
+    min-height: 90px;
     background-size: cover; background-position: center;
     border-bottom: 1px solid var(--border);
     position: relative;
@@ -240,12 +283,15 @@
   .speech.female .speaker { color: #ff99bb; }
 
   .choice-area {
-    padding: 12px 20px 16px;
+    padding: 10px 18px 12px;
     border-top: 1px solid var(--border);
     background: rgba(0,20,10,0.4);
-    max-height: 240px;
+    flex: 0 0 auto;
+    max-height: 42%;
     overflow-y: auto;
   }
+  /* 空的选择区不占额外空间 */
+  .choice-area:empty { display: none; }
   .choice-area .group-label {
     font-size: 10px; color: var(--text-dim);
     letter-spacing: 2px; margin: 6px 0 2px;
@@ -285,6 +331,20 @@
     transform: translateX(4px);
   }
   .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .choice-btn.selected {
+    background: linear-gradient(90deg, rgba(0,255,136,0.35), rgba(0,102,51,0.45)) !important;
+    border-color: var(--green-bright);
+    border-width: 2px;
+    color: var(--green-bright);
+    box-shadow: 0 0 12px var(--green-glow), inset 0 0 8px rgba(0,255,136,0.2);
+    transform: scale(0.98);
+  }
+  .choice-btn.selected::before {
+    content: "✓ ";
+    color: var(--green-bright);
+    font-weight: bold;
+    text-shadow: 0 0 6px var(--green-glow);
+  }
   .choice-btn .eff {
     font-size: 10px; color: var(--text-dim);
     margin-left: 8px;
@@ -292,17 +352,19 @@
   .choice-btn .eff .plus { color: var(--green-bright); }
   .choice-btn .eff .minus { color: var(--danger); }
 
-  /* 行动按钮区 */
+  /* 行动按钮区（嵌入中间列底部，与选择区共享空间） */
   .action-bar {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 6px;
-    padding: 10px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    max-height: 200px;
+    padding: 10px 18px 12px;
+    background: rgba(0,20,10,0.55);
+    border-top: 1px solid var(--border);
+    flex: 0 0 auto;
+    max-height: 42%;
     overflow-y: auto;
   }
+  .action-bar:empty { display: none; }
   .action-bar .action-group-label {
     grid-column: 1 / -1;
     font-size: 10px; color: var(--green-mid);
@@ -331,6 +393,7 @@
   .action-btn:disabled { opacity: 0.35; cursor: not-allowed; }
   .action-btn .act-name { font-weight: bold; font-size: 13px; }
   .action-btn .act-eff { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .action-btn.unavailable { display: none; }
 
   /* 右侧：好感度/角色 */
   .char-row {
@@ -350,6 +413,23 @@
   }
   .char-row.me-row .char-name { color: var(--green-bright); font-weight: bold; }
   .char-row.me-row .char-aff { color: var(--warn); font-size: 9px; }
+  .char-row.couple {
+    background: rgba(255,102,153,0.12);
+    border: 1px dashed #ff6699;
+  }
+  .char-row .confess-btn {
+    font-size: 10px; padding: 1px 6px;
+    color: #ff99bb;
+    background: rgba(255,102,153,0.15);
+    border: 1px solid #ff6699;
+    cursor: pointer; font-family: inherit;
+    margin-left: 4px;
+  }
+  .char-row .confess-btn:hover:not(:disabled) {
+    background: rgba(255,102,153,0.3);
+    box-shadow: 0 0 8px rgba(255,102,153,0.5);
+  }
+  .char-row .confess-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .char-group-title {
     font-size: 10px; color: var(--green-mid);
     letter-spacing: 2px;
@@ -466,6 +546,60 @@
   .float-delta.pos { color: var(--green-bright); text-shadow: 0 0 8px var(--green-glow); }
   .float-delta.neg { color: var(--danger); text-shadow: 0 0 8px rgba(255,68,102,0.6); }
 
+  /* ============ 风险活动结果模态框 ============ */
+  .risk-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.78);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200;
+    animation: riskFadeIn 0.25s ease;
+  }
+  @keyframes riskFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .risk-modal {
+    width: min(440px, 92vw);
+    background: var(--bg-card);
+    border: 2px solid var(--green-bright);
+    box-shadow: 0 0 30px var(--green-glow), inset 0 0 20px rgba(0,255,136,0.08);
+    padding: 22px 24px;
+    text-align: center;
+  }
+  .risk-modal-title {
+    font-size: 16px; font-weight: 900;
+    color: var(--green-bright);
+    letter-spacing: 3px; margin-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+  }
+  .risk-modal-title.bad { color: var(--danger); border-color: var(--danger); }
+  .risk-modal-body {
+    font-size: 14px; line-height: 1.8;
+    color: var(--text-main);
+    margin-bottom: 16px;
+    text-align: left;
+  }
+  .risk-modal-deltas {
+    display: flex; flex-wrap: wrap; gap: 6px 10px;
+    justify-content: center;
+    margin: 10px 0 16px;
+    font-size: 13px;
+  }
+  .risk-modal-deltas .pos { color: var(--green-bright); }
+  .risk-modal-deltas .neg { color: var(--danger); }
+  .risk-modal-btn {
+    padding: 10px 32px; font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--green-bright);
+    background: rgba(0,40,20,0.6);
+    border: 1px solid var(--green-mid);
+    cursor: pointer; font-family: inherit;
+    transition: all 0.2s;
+  }
+  .risk-modal-btn:hover {
+    background: rgba(0,255,136,0.15);
+    box-shadow: 0 0 14px var(--green-glow);
+  }
+
   @media (max-width: 900px) {
     .main-area { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
     .panel { max-height: 130px; padding: 8px; }
@@ -559,6 +693,18 @@
     自由选择 / 数值养成 / 好感度 / 多结局<br>
     主角性别：男（固定）
   </div>
+  <div class="update-notice">
+    <div class="update-title">✦ 最新更新 · 2026.10.08 ✦</div>
+    <ul>
+      <li>🎒 设备拥有系统：杂志/手机/iTouch 可购买并在属性栏展示，增加随机事件触发概率</li>
+      <li>🍚 伙食费经济：每周自动扣伙食费，月计划新增理财选项（节约/普通/吃好）</li>
+      <li>📚 不进则退：非学习类行动会降低学业属性，一个月不学习成绩下降</li>
+      <li>📝 高考750分体系：语文150+数学150+英语150+理综300，排名参考实际</li>
+      <li>💔 多人恋爱风险：脚踏两条船有败露风险，被发现后果严重</li>
+      <li>🎭 社团限每周1次，奢侈品不可重复购买</li>
+      <li>🚨 上网/玩手机被抓会降低老师、家长好感度</li>
+    </ul>
+  </div>
 </div>
 
 <!-- ========== 游戏主屏 ========== -->
@@ -580,7 +726,7 @@
       <div id="attr-list"></div>
     </div>
 
-    <!-- 中：场景/对话/选择 -->
+    <!-- 中：场景/对话/选择/行动 -->
     <div class="scene-box">
       <div class="scene-bg" id="scene-bg">
         <div class="chapter-badge" id="scene-chapter">序章</div>
@@ -588,6 +734,7 @@
       </div>
       <div class="dialogue-area" id="dialogue-area"></div>
       <div class="choice-area" id="choice-area"></div>
+      <div class="action-bar" id="action-bar"></div>
     </div>
 
     <!-- 右：角色好感度 -->
@@ -596,9 +743,6 @@
       <div id="char-list"></div>
     </div>
   </div>
-
-  <!-- 行动按钮 -->
-  <div class="action-bar" id="action-bar"></div>
 </div>
 
 <!-- ========== 结局屏 ========== -->
@@ -637,7 +781,7 @@ const CHARACTERS = {
   huangzihua:  { name:"黄子华", gender:"male", dorm:"213", hobby:"lol", ref:"湖南涉外经济学院" },
   laikefu:     { name:"赖柯甫", gender:"male", dorm:"213", hobby:"lol", ref:"中南林业科技大学" },
   lefan:       { name:"乐帆", gender:"male", dorm:"213", hobby:"lol", ref:"长春工业大学" },
-  liugangpeng: { name:"刘刚鹏", gender:"male", dorm:"213", hobby:"lol", ref:"北京理工珠海学院" },
+  liugangpeng: { name:"刘刚鹏", gender:"male", dorm:"213", hobby:"lol", ref:"北京理工珠海学院", hasPhone:true },
   wangxuanlin: { name:"王选林", gender:"male", dorm:"213", hobby:"lol", ref:"福建工程学院" },
   wuzifan:     { name:"吴梓凡", gender:"male", dorm:"213", hobby:"-", ref:"新疆大学" },
   zhangxiapeng:{ name:"章夏鹏", gender:"male", dorm:"213", hobby:"lol", ref:"衡阳师范" },
@@ -688,6 +832,12 @@ const CHARACTERS = {
   yanglingyu:  { name:"杨玲玉", gender:"female", type:"社交型", ref:"南京理工大学" },
   yanghuairuo: { name:"杨怀若", gender:"female", type:"社交型", ref:"华中农业大学" },
   zuowenhui:  { name:"左文慧", gender:"female", type:"社交型", ref:"来年再战" },
+
+  /* ---- 师长（老师/家长，可建立关系、邀约、影响成绩与零花钱） ---- */
+  chen_teacher: { name:"陈老师", gender:"male", role:"teacher", subject:"班主任·理科", desc:"高一班主任，严厉但负责。与学生关系好时会暗中加分成績。" },
+  liu_teacher:  { name:"刘老师", gender:"male", role:"teacher", subject:"班主任·文科", desc:"高二/高三班主任，关心学生，关系好可提升成绩。" },
+  father:       { name:"父亲", gender:"male", role:"parent", desc:"县城职工，话不多。在家表现好会涨零花钱。" },
+  mother:       { name:"母亲", gender:"female", role:"parent", desc:"操持家务，心疼你。常回家探望会获得额外零花钱奖励。" },
 };
 
 /* 主要可互动角色（精简，便于显示） */
@@ -745,6 +895,7 @@ const ACTIONS = [
   { id:"study_math",  name:"📐 专攻数学", eff:{math:4, stress:3, stamina:-2}, slots:[0,1,2,3], companion:true },
   { id:"study_eng",   name:"🔤 专攻英语", eff:{english:4, stress:2, stamina:-2}, slots:[0,1,2,3], companion:true },
   { id:"study_comp",  name:"🔬 理综训练", eff:{comprehensive:4, stress:3, stamina:-3}, slots:[0,1,2,3], companion:true },
+  { id:"study_chinese", name:"📖 专攻语文", eff:{chinese:4, stress:2, stamina:-2}, slots:[0,1,2,3], companion:true },
   { id:"football",    name:"⚽ 踢足球",   eff:{football:4, sports:3, stamina:-4, stress:-2}, tag:"运动", slots:[1,2], companion:true },
   { id:"basketball",  name:"🏀 打篮球",   eff:{sports:3, stamina:-3, charm:1}, tag:"运动", slots:[1,2], companion:true },
   { id:"badminton",   name:"🏸 打羽毛球", eff:{sports:3, stamina:-2, charm:1, eq:1}, tag:"运动", slots:[1,2], companion:true },
@@ -774,6 +925,23 @@ const ACTIONS = [
   /* 借手机/溜网吧（有风险） */
   { id:"borrow_phone",  name:"🤳 借同学手机玩", eff:{lol_skill:3, game_knowledge:2, stress:-2}, tag:"风险", slots:[1,2,3], companion:true, special:"borrow_phone" },
   { id:"sneak_netbar",  name:"🌙 半夜溜去网吧", eff:{lol_skill:5, game_knowledge:3, stress:-3, stamina:-5}, cost:{money:10}, tag:"风险", slots:[4], companion:true, special:"sneak_netbar" },
+  /* 找老师请教（动态绑定当前班主任） */
+  { id:"ask_teacher",   name:"👨‍🏫 找老师请教", eff:{intelligence:2, stress:1, stamina:-1}, tag:"师长", special:"ask_teacher" },
+];
+
+/* ---------- 假期专属行动池（不按时段，按次数；halfday/miniMonth/monthLeave/winter/summer 通用） ---------- */
+const HOLIDAY_ACTIONS = [
+  { id:"h_rest",        name:"😴 在家补觉",     eff:{stamina:8, stress:-5} },
+  { id:"h_watch_tv",    name:"📺 看电视放松",   eff:{stress:-3, eq:1, chinese:1} },
+  { id:"h_cook",        name:"🍜 帮母亲做饭",   eff:{mother_affection:5, eq:1, chinese:1} },
+  { id:"h_chat_p",      name:"👨‍👩‍👧 陪父母聊天",  eff:{father_affection:3, mother_affection:3, stress:-4} },
+  { id:"h_study",       name:"📚 在家自习",     eff:{intelligence:3, math:2, stress:2, stamina:-2} },
+  { id:"h_homework",    name:"📝 赶作业",       eff:{chinese:2, math:2, english:2, stress:3, stamina:-2} },
+  { id:"h_shop",        name:"🛒 上街逛街",     eff:{charm:2, eq:1, stress:-3}, cost:{money:15}, companion:true },
+  { id:"h_relatives",   name:"🏠 走亲戚",       eff:{father_affection:2, mother_affection:2, stress:-2}, reward:{money:10} },
+  { id:"h_hang",        name:"👥 约同学出去玩", eff:{eq:2, charm:2, stress:-4}, cost:{money:20}, companion:true },
+  { id:"h_netbar",      name:"🌙 溜去网吧开黑", eff:{lol_skill:5, game_knowledge:2, stress:-5, intelligence:-2, stamina:-3}, cost:{money:15}, tag:"风险", special:"sneak_netbar", companion:true },
+  { id:"h_phone",       name:"📱 躲被窝玩手机", eff:{lol_skill:3, game_knowledge:2, stress:-3, stamina:-2}, requiresPhone:true },
 ];
 
 /* ---------- 时段 ---------- */
@@ -784,13 +952,24 @@ let state = null;
 
 function initState() {
   state = {
-    day: 1,           // 游戏内天数（从2013.09.01起）
-    slot: 0,          // 0-4 时段索引
+    // 主时间（按月/周推进）
+    year: 2013,
+    month: 9,
+    weekIdx: 0,            // 月内第几周 (0..3)
+    weekActionsLeft: 4,    // 当前周剩余行动点
+    monthlyActionsDone: 0, // 本月已用行动数
+    inHoliday: null,       // null | "halfday" | "miniMonth" | "monthLeave" | "winter" | "summer"
+    holidayActionsLeft: 0,
+    chapterNode: null,     // 高三节点式推进当前节点 id
+    lastMiniMonthYM: null, // 已触发小月假的年月（"YYYY-MM"）
+    // 旧字段保留为派生量（兼容旧 SCENES condition）
+    day: 1,           // 游戏内天数（从2013.09.01起，由 syncDerivedDay 反算）
+    slot: 0,          // 0-4 时段索引（保留兼容）
+    freeActionsLeft: 5, // 兼容旧引用
     chapter: 0,       // 0序章,1日常,2世界杯,3S4,4高三,5高考
     dorm: null,
     attrs: {},
     affections: {},   // charId -> 好感度
-    freeActionsLeft: 5, // 当前时段剩余自由行动数（实际就是每时段1个）
     flags: {
       prologueComplete: false,
       noticedChar: null,
@@ -801,6 +980,7 @@ function initState() {
       worldCupWatched: false,
       s4Watched: false,
       dropoutEvent: false,
+      sportsMeetPlayed: false,
     },
     log: [],
     sceneQueue: [],   // 待播放的剧情
@@ -813,17 +993,22 @@ function initState() {
     pendingExam: null,       // 待触发的考试类型 (monthly/midterm/final/mock)
     lastPlanMonth: 0,        // 上次制定月计划的月份
     lastRandomEventMonth: 0, // 上次触发月中随机事件的月份
-    lastExamMonth: 0,        // 上次触发月末考试的月份（高三每周模拟考用）
-    lastMockWeek: 0,         // 上次触发每周模拟考的周数（高三用）
+    lastExamMonth: 0,        // 上次触发月末考试的月份
     monthPlan: null,         // 本月计划 { focus, socialTarget, month }
     playedStorylines: {},   // 已播放的支线剧情 id -> true
+    couples: {},            // 已确立恋爱关系的目标 charId -> true
+    devices: {},            // 已拥有的设备 id -> true (magazine/football_mag/esports_mag/phone/itouch)
+    monthStudyActions: 0,   // 本月已执行 study* 行动次数（月末检查用）
+    mealPlan: "normal",     // 本月伙食标准：frugal(节约)/normal(普通)/good(吃好)
+    weekMealDeducted: false,// 本周伙食费是否已扣
+    clubUsedThisWeek: false,// 本周是否已参加社团活动
   };
   ATTRS.forEach(a => state.attrs[a.name] || (state.attrs[a.key] = a.default));
   // 用key存
   ATTRS.forEach(a => state.attrs[a.key] = a.default);
   // stress 与 money 不在 ATTRS 中，单独初始化
   state.attrs.stress = 0;
-  state.attrs.money = 100;   // 起始零花钱 100 元
+  state.attrs.money = 300;   // 起始零花钱 300 元（覆盖首两周伙食费）
   // 初始化好感度
   Object.keys(CHARACTERS).forEach(id => state.affections[id] = 0);
 }
@@ -850,31 +1035,36 @@ function getCountdown() {
   return diff;
 }
 
-/* 把 state.day 跳转到目标日期（y, m: 1-12, d），用于章节推进时让日期与剧情同步 */
+/* 把游戏时间跳转到目标年月（按月推进系统：设置 year/month，重置 weekIdx） */
 function jumpGameDate(y, m, d) {
-  const start = new Date(2013, 8, 1);
-  const target = new Date(y, m - 1, d);
-  const diff = Math.round((target - start) / 86400000) + 1; // day=1 对应 09.01
-  if (diff > state.day) {
-    const jumped = diff - state.day;
-    state.day = diff;
-    state.slot = 0;
-    addNarrationToDialogue(`📅 时光飞逝，转眼到了 ${y}.${String(m).padStart(2,"0")}.${String(d).padStart(2,"0")}（跳过 ${jumped} 天）。`);
-  }
+  state.year = y;
+  state.month = m;
+  state.weekIdx = 0;
+  state.weekActionsLeft = 4;
+  state.monthlyActionsDone = 0;
+  state.inHoliday = null;
+  state.holidayActionsLeft = 0;
+  syncDerivedDay();
+  addNarrationToDialogue(`📅 时光飞逝，转眼到了 ${y}年${String(m).padStart(2,"0")}月。`);
 }
 
-/* 各章节对应的真实起始日期（与设计文档时间线一致） */
-const CHAPTER_START_DATES = {
-  1: { y:2013, m:9, d:2 },    // 第一章·日常（开学次日）
-  2: { y:2014, m:6, d:12 },   // 第二章·世界杯（开幕前夜）
-  3: { y:2014, m:9, d:18 },   // 第三章·S4（全球总决赛）
-  4: { y:2015, m:3, d:1 },    // 终章·高三百日冲刺
+/* 各章节对应的起始年月（与设计文档时间线一致） */
+const CHAPTER_START_YM = {
+  1: { y:2013, m:9 },    // 第一章·日常（开学）
+  2: { y:2014, m:6 },    // 第二章·世界杯
+  3: { y:2014, m:9 },    // 第三章·S4
+  4: { y:2015, m:3 },    // 终章·高三百日冲刺
 };
+const CHAPTER_START_DATES = CHAPTER_START_YM; // 兼容旧引用
 
 /* ---------- UI 渲染 ---------- */
 function renderTopbar() {
-  document.getElementById("info-date").textContent = getDateStr();
-  document.getElementById("info-slot").textContent = TIME_SLOTS[state.slot] || "—";
+  document.getElementById("info-date").textContent = state.inHoliday
+    ? `${state.year}年${String(state.month).padStart(2,"0")}月 · ${HOLIDAY_EVENTS[state.inHoliday] ? HOLIDAY_EVENTS[state.inHoliday].name : "假期"}`
+    : `${state.year}年${String(state.month).padStart(2,"0")}月 第${state.weekIdx+1}周`;
+  document.getElementById("info-slot").textContent = state.inHoliday
+    ? `假期剩余 ${state.holidayActionsLeft} 行动`
+    : `剩余 ${state.weekActionsLeft} 行动`;
   document.getElementById("info-chapter").textContent = chapterName(state.chapter);
   document.getElementById("info-dorm").textContent = state.dorm ? DORMS[state.dorm].name : "—";
   const cd = getCountdown();
@@ -920,6 +1110,50 @@ function renderAttrs() {
     <div class="val">${state.attrs.stress||0}</div>
   </div>`;
   html += `</div>`;
+  // 设备拥有列表
+  const devList = state.devices || {};
+  const devItems = [
+    { key:"magazine",     name:"📰 《读者》" },
+    { key:"football_mag", name:"⚽ 《足球周刊》" },
+    { key:"esports_mag",  name:"🕹️ 《电子竞技》" },
+    { key:"phone",        name:"📱 手机" },
+    { key:"itouch",       name:"🎧 iTouch" },
+  ];
+  const owned = devItems.filter(d => devList[d.key]);
+  html += `<div class="attr-section"><div class="attr-section-title">[ 🎒 设备 ]</div>`;
+  if (owned.length) {
+    owned.forEach(d => {
+      html += `<div class="attr-row"><div class="name">${d.name}</div><div class="val" style="color:var(--green-bright)">✓</div></div>`;
+    });
+  } else {
+    html += `<div class="attr-row"><div class="name" style="font-size:12px;color:var(--text-dim);">暂无设备</div><div class="val"></div></div>`;
+  }
+  html += `</div>`;
+  // 成绩记录（最新分数 + 历史列表）
+  const hist = state.examHistory || [];
+  const last = hist.length ? hist[hist.length-1] : null;
+  html += `<div class="attr-section"><div class="attr-section-title">[ 📈 成绩 ]</div>`;
+  if (last) {
+    html += `<div class="attr-row score-latest">
+      <div class="name">🏆 最近</div>
+      <div class="bar"><div class="fill" style="width:${Math.min(100, last.score)}%"></div></div>
+      <div class="val">${last.score}</div>
+    </div>`;
+    html += `<div class="attr-row score-meta"><div class="name" style="font-size:11px;color:var(--text-dim);">名次 #${last.rank} · ${last.ym}</div><div class="val" style="font-size:11px;color:${last.diff>0?'#7fcf7f':(last.diff<0?'#cf7f7f':'var(--text-dim)')};">${last.diff>0?`+${last.diff}`:(last.diff<0?last.diff:'±0')}</div></div>`;
+    if (hist.length > 1) {
+      html += `<div class="score-history">`;
+      // 旧→新
+      hist.slice().reverse().forEach(h => {
+        const cls = h.diff > 0 ? "up" : (h.diff < 0 ? "down" : "flat");
+        const diffStr = hist.length>1 && h!==last ? `<span class="diff ${cls}">${h.diff>0?`+${h.diff}`:(h.diff<0?h.diff:'±0')}</span>` : "";
+        html += `<div class="score-h-item"><span class="score-h-ym">${h.ym}</span><span class="score-h-score">${h.score}</span>${diffStr}</div>`;
+      });
+      html += `</div>`;
+    }
+  } else {
+    html += `<div class="attr-row"><div class="name" style="font-size:12px;color:var(--text-dim);">暂无考试记录</div><div class="val"></div></div>`;
+  }
+  html += `</div>`;
   document.getElementById("attr-list").innerHTML = html;
 }
 
@@ -933,16 +1167,21 @@ function renderChars() {
       <span class="char-aff">${state.affections[state.playerCharId]||0}</span>
     </div>`;
   }
-  // 分组显示所有人物：男生按宿舍，女生按类型
-  const groupOrder = ["212宿舍","213宿舍","214宿舍","走读生","女生·学习型","女生·文艺型","女生·体育型","女生·社交型"];
+  // 分组显示所有人物：男生按宿舍，女生按类型，师长/家长单独分组
+  const groupOrder = ["212宿舍","213宿舍","214宿舍","走读生","女生·学习型","女生·文艺型","女生·体育型","女生·社交型","师长","家长"];
   const groups = {};
   Object.keys(CHARACTERS).forEach(id => {
     if (id === state.playerCharId) return; // 跳过玩家自己
     const c = CHARACTERS[id];
-    let g = c.dorm ? `${c.dorm}宿舍` : `女生·${c.type}`;
-    if (c.dorm === "走读") g = "走读生";
-    if (!c.dorm) g = `女生·${c.type}`;
-    if (!groupOrder.includes(g)) g = "女生·社交型";
+    let g;
+    if (c.role === "teacher") g = "师长";
+    else if (c.role === "parent") g = "家长";
+    else {
+      g = c.dorm ? `${c.dorm}宿舍` : `女生·${c.type}`;
+      if (c.dorm === "走读") g = "走读生";
+      if (!c.dorm) g = `女生·${c.type}`;
+      if (!groupOrder.includes(g)) g = "女生·社交型";
+    }
     if (!groups[g]) groups[g] = [];
     groups[g].push({ id, c });
   });
@@ -952,14 +1191,69 @@ function renderChars() {
     groups[g].forEach(({id, c}) => {
       const aff = state.affections[id] || 0;
       const isF = c.gender === "female";
-      const star = aff >= 80 ? " ★" : (aff >= 40 ? " ·" : "");
-      html += `<div class="char-row ${isF?'female':''}">
-        <span class="char-name">${c.name}${c.role?`<span class="char-role">[${c.role}]</span>`:""}${star}</span>
+      const isCouple = !!(state.couples && state.couples[id]);
+      const star = isCouple ? " ♥" : (aff >= 80 ? " ★" : (aff >= 40 ? " ·" : ""));
+      const canConfess = isF && !c.role && aff >= 60 && !isCouple && (state.attrs.money||0) >= 100;
+      const confessBtn = (isF && !c.role && aff >= 60 && !isCouple)
+        ? `<button class="confess-btn" data-id="${id}" ${canConfess ? "" : "disabled"} title="${canConfess ? "告白（花费100元）" : "零花钱不足100元"}">告白</button>`
+        : "";
+      const tag = c.role === "teacher" ? (c.subject||"老师") : (c.role === "parent" ? "家长" : "");
+      html += `<div class="char-row ${isF?'female':''} ${isCouple?'couple':''}">
+        <span class="char-name">${c.name}${tag?`<span class="char-role">[${tag}]</span>`:""}${star}</span>
         <span class="char-aff">${aff}</span>
+        ${confessBtn}
       </div>`;
     });
   });
-  document.getElementById("char-list").innerHTML = html;
+  const list = document.getElementById("char-list");
+  list.innerHTML = html;
+  // 绑定告白按钮
+  list.querySelectorAll(".confess-btn").forEach(b => {
+    b.onclick = () => {
+      if (b.disabled) return;
+      confessTo(b.dataset.id);
+    };
+  });
+}
+
+/* ---------- 情侣功能 ---------- */
+const CONFESS_COST = 100;       // 告白花费（买礼物）
+const CONFESS_AFF_THRESHOLD = 60; // 告白好感阈值
+function confessTo(charId) {
+  const c = CHARACTERS[charId];
+  if (!c) return;
+  const aff = state.affections[charId] || 0;
+  if (c.gender !== "female") {
+    addNarrationToDialogue(`🤝 ${c.name} 是男同学，可以成为好兄弟，但不能成为情侣。`);
+    return;
+  }
+  if (aff < CONFESS_AFF_THRESHOLD) {
+    addNarrationToDialogue(`💔 ${c.name} 对你还不够熟悉（需好感≥${CONFESS_AFF_THRESHOLD}）。`);
+    return;
+  }
+  if (state.couples && state.couples[charId]) {
+    addNarrationToDialogue(`💔 你和 ${c.name} 已经是情侣了。`);
+    return;
+  }
+  if ((state.attrs.money||0) < CONFESS_COST) {
+    addNarrationToDialogue(`💔 零花钱不够买礼物（需 ${CONFESS_COST} 元）。`);
+    return;
+  }
+  // 扣钱、确立关系
+  state.attrs.money = (state.attrs.money||0) - CONFESS_COST;
+  state.couples = state.couples || {};
+  state.couples[charId] = true;
+  // 好感额外提升 + 压力-5 + 魅力+2
+  state.affections[charId] = (state.affections[charId] || 0) + 10;
+  state.attrs.stress = Math.max(0, (state.attrs.stress||0) - 5);
+  state.attrs.charm = Math.min(100, (state.attrs.charm||0) + 2);
+  const coupleText = `${c.name}红着脸点了点头："那……我们在一起吧。" 💞`;
+  showRiskResultModal("💘 告白成功",
+    `你买了一份 ${CONFESS_COST} 元的礼物，鼓起勇气向 ${c.name} 告白。<br>${coupleText}<br><span style="color:var(--text-dim);font-size:12px">你们已是情侣：今后与 ${c.name} 一起行动将获得额外好感与压力加成。</span>`,
+    [{name:"零花钱", v:-CONFESS_COST}, {name:c.name+"好感", v:10}, {name:"压力", v:-5}, {name:"魅力", v:2}],
+    () => { /* 不推进时间，仅刷新 */ },
+    false);
+  renderTopbar(); renderAttrs(); renderChars();
 }
 
 /* ---------- 应用效果 ---------- */
@@ -979,7 +1273,9 @@ function applyEffects(eff, silent=false) {
     }
     if (state.attrs[key] !== undefined) {
       state.attrs[key] = Math.max(0, Math.min(ATTRS.find(a=>a.key===key)?.max || 100, state.attrs[key] + eff[k]));
-      if (!silent) deltas.push({ name: ATTRS.find(a=>a.key===key)?.name || key, v: eff[k] });
+      const attrName = ATTRS.find(a=>a.key===key)?.name
+        || (key === "stress" ? "😵 压力" : (key === "money" ? "💰 零花钱" : key));
+      if (!silent) deltas.push({ name: attrName, v: eff[k] });
     } else if (key === "money") {
       state.attrs.money = Math.max(0, (state.attrs.money||0) + eff[k]);
       if (!silent) deltas.push({ name: "💰 零花钱", v: eff[k] });
@@ -1005,6 +1301,28 @@ function showToast(deltas) {
   t.classList.add("show");
   clearTimeout(window.__toastTimer);
   window.__toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+/* 非学习类行动导致学业属性下降（不进则退）
+   学习类：study, study_x, read_mag, buy_ref_book, ask_teacher
+   非学习类：运动/娱乐/购物/食堂/风险/社团等 → 随机一科 -1 */
+function applyAcademicDecline(action) {
+  if (!action || !action.id) return;
+  const id = action.id;
+  const isStudy = id.startsWith("study") || id === "read_mag" || id === "buy_ref_book" || id === "ask_teacher";
+  if (isStudy) return;
+  const subjects = ["chinese","math","english","comprehensive"];
+  const pick = subjects[Math.floor(Math.random() * subjects.length)];
+  state.attrs[pick] = Math.max(0, (state.attrs[pick]||0) - 1);
+  let extra = "";
+  // 20% 概率智力也 -1
+  if (Math.random() < 0.2) {
+    state.attrs.intelligence = Math.max(0, (state.attrs.intelligence||0) - 1);
+    extra = "、智力 -1";
+  }
+  const subjName = ATTRS.find(a => a.key === pick)?.name || pick;
+  // 存入 pending，由 postActionFlavor 合并显示
+  state._academicDeclineMsg = `📚 久未温习，${subjName} -1${extra}。`;
 }
 
 /* ---------- 场景背景图（用CSS渐变模拟） ---------- */
@@ -1209,7 +1527,9 @@ function buildAllCharacterOptions() {
     "女生·社交型": [],
   };
   Object.keys(CHARACTERS).forEach(id => {
+    if (id === state.playerCharId) return; // 排除玩家本人
     const c = CHARACTERS[id];
+    if (c.role === "teacher" || c.role === "parent") return; // 师长不参与"注意到谁"
     let g = c.dorm ? `${c.dorm}宿舍` : `女生·${c.type}`;
     if (c.dorm === "走读") g = "走读生";
     if (!c.dorm) g = `女生·${c.type}`;
@@ -1236,6 +1556,7 @@ function buildMaleCharacterOptions() {
   Object.keys(CHARACTERS).forEach(id => {
     const c = CHARACTERS[id];
     if (c.gender !== "male") return;
+    if (c.role === "teacher" || c.role === "parent") return; // 师长不能作为玩家身份
     let g = c.dorm === "走读" ? "走读生" : `${c.dorm}宿舍`;
     if (!groups[g]) g = "212宿舍";
     // 前期不显示参考大学，只显示爱好
@@ -1527,15 +1848,39 @@ const SCENES = {
       ] }
     ]
   },
+  ch4_mock2: {
+    id:"ch4_mock2", title:"二模·2015年4月", background:"exam_room",
+    lines: [
+      { type:"narration", text:"2015年4月，高三第二次模拟考试。" },
+      { type:"character", char:"TEACHER", text:"二模比一模难，分数会降，做好心理准备。" },
+      { type:"choice", prompt:"二模前的状态", options:[
+        { id:"ready", text:"准备充分", effects:{ intelligence:3, stress:2 } },
+        { id:"nervous", text:"紧张得睡不着", effects:{ stress:6, stamina:-3 } },
+        { id:"steady", text:"按部就班", effects:{ intelligence:2, stress:1 } },
+      ] }
+    ]
+  },
+  ch4_mock3: {
+    id:"ch4_mock3", title:"三模·2015年5月", background:"exam_room",
+    lines: [
+      { type:"narration", text:"2015年5月，三模——高考前最后一次大考。" },
+      { type:"character", char:"TEACHER", text:"三模成绩基本就是高考成绩的影子。别松劲。" },
+      { type:"choice", prompt:"三模后的打算", options:[
+        { id:"push", text:"最后冲刺", effects:{ intelligence:4, stress:4, stamina:-2 } },
+        { id:"relax", text:"适当放松", effects:{ stress:-3, stamina:3 } },
+        { id:"review", text:"查漏补缺", effects:{ intelligence:3, stress:1 } },
+      ] }
+    ]
+  },
   ch4_02: {
     id:"ch4_02", title:"高考·2015年6月7日", background:"exam_room",
     lines: [
       { type:"narration", text:"2015年6月7日。高考。" },
-      { type:"conditional", conditions:[
-        { if:"intelligence >= 90 && stress <= 30", text:"试卷上的题，我全都见过。我答得很稳。", next:"ch4_good" },
-        { if:"intelligence >= 60", text:"有些题会，有些题不确定。我尽力了。", next:"ch4_mid" },
-        { if:"intelligence < 40", text:"很多题都不会。我只能尽量写满。", next:"ch4_bad" },
-      ] }
+    ],
+    conditional: [
+      { if:"intelligence >= 90 && stress <= 30", text:"试卷上的题，我全都见过。我答得很稳。", next:"ch4_good" },
+      { if:"intelligence >= 60", text:"有些题会，有些题不确定。我尽力了。", next:"ch4_mid" },
+      { if:"intelligence < 60", text:"很多题都不会。我只能尽量写满。", next:"ch4_bad" },
     ]
   },
   ch4_good: {
@@ -1662,21 +2007,19 @@ function onSceneEnd(scene, nextId) {
   if (scene.id === "ch1_02") { playScene("ch1_03"); return; }
   if (scene.id === "ch1_03") {
     state.flags.ch1Complete = true;
-    state.chapter = 2;
     renderTopbar();
-    document.getElementById("toast").innerHTML = `<span class="delta pos">一年一届·秋季运动会 来了！</span>`;
+    document.getElementById("toast").innerHTML = `<span class="delta pos">秋季运动会将于 11 月举行！</span>`;
     document.getElementById("toast").classList.add("show");
-    setTimeout(() => document.getElementById("toast").classList.remove("show"), 2000);
-    playScene("sports_meet");
+    setTimeout(() => document.getElementById("toast").classList.remove("show"), 2500);
+    enterFreeActionMode();
     return;
   }
-  // 运动会结束后进入第二章
+  // 运动会结束后回到自由行动（第二章由月份触发，2014.06）
   if (scene.id === "sports_meet") {
-    state.chapter = 2;
     renderTopbar();
-    document.getElementById("toast").innerHTML = `<span class="delta pos">第二章·世界杯之夏 已解锁</span>`;
+    document.getElementById("toast").innerHTML = `<span class="delta pos">运动会圆满结束！</span>`;
     document.getElementById("toast").classList.add("show");
-    setTimeout(() => document.getElementById("toast").classList.remove("show"), 2000);
+    setTimeout(() => document.getElementById("toast").classList.remove("show"), 2500);
     enterFreeActionMode();
     return;
   }
@@ -1719,13 +2062,19 @@ function onSceneEnd(scene, nextId) {
   }
   // 终章
   if (scene.id === "ch4_01") {
-    // 进入高考前最后一段自由行动（少量）
+    // 百日誓师后：1 次学习冲刺自由行动
     enterFinalPrepAfterCh4_01();
     return;
   }
-  if (scene.id === "ch4_02") {
-    // 已经在onSceneEnd里通过nextId处理
+  if (scene.id === "ch4_mock2" || scene.id === "ch4_mock3") {
+    // 二模/三模结束后：1 次学习冲刺自由行动
+    enterFinalPrep();
     return;
+  }
+  if (scene.id === "ch4_02") {
+    // 条件分支已通过 nextId 跳到 ch4_good/mid/bad；若未匹配则走默认结局
+    if (nextId && SCENES[nextId]) { playScene(nextId); return; }
+    playScene("ch4_mid"); return;
   }
   if (scene.id === "ch4_good" || scene.id === "ch4_mid" || scene.id === "ch4_bad") {
     playScene("ch4_end"); return;
@@ -1741,6 +2090,8 @@ function onSceneEnd(scene, nextId) {
 /* ---------- 自由行动模式 ---------- */
 function enterFreeActionMode() {
   state.phase = "freeAction";
+  // 首次进入自由行动（本月第一周）若未扣伙食费则扣除
+  if (!state.weekMealDeducted) deductWeeklyMealFee();
   document.getElementById("dialogue-area").innerHTML = `<div class="narration">▸ 自由行动时段。选择一项行动来推进时间。</div>`;
   document.getElementById("choice-area").innerHTML = "";
   setBackground(state.dorm === "day_student" ? "bedroom_night" : "classroom", "自由时段");
@@ -1760,15 +2111,21 @@ function enterFinalPrep() {
 function renderActionBar(finalOnly=false) {
   const bar = document.getElementById("action-bar");
   bar.innerHTML = "";
-  let list = ACTIONS.slice();
+  let list;
   if (finalOnly) {
-    list = list.filter(a => ["study","study_math","study_eng","study_comp","sleep","run"].includes(a.id));
+    list = ACTIONS.filter(a => ["study","study_math","study_eng","study_comp","study_chinese","sleep","run"].includes(a.id));
+  } else if (isHoliday()) {
+    // 假期专属行动池
+    list = HOLIDAY_ACTIONS.slice();
+    // 需要手机的行动只有有手机的玩家可用
+    list = list.filter(a => !a.requiresPhone || charHasPhone(state.playerCharId));
   } else {
-    // 按当前时段过滤：只显示该时段可用的行动
-    list = list.filter(a => !a.slots || a.slots.includes(state.slot));
+    list = ACTIONS.slice();
+    // 读书期间不能打LOL，只能通过"半夜溜网吧"
+    list = list.filter(a => a.id !== "lol");
   }
   // 按 tag 分组
-  const groupOrder = [undefined, "运动", "社团", "食堂", "购物", "风险"];
+  const groupOrder = [undefined, "运动", "社团", "食堂", "购物", "风险", "师长"];
   const groupLabel = {
     undefined:"📚 学习/日常",
     "运动":"⚽ 运动",
@@ -1776,6 +2133,7 @@ function renderActionBar(finalOnly=false) {
     "食堂":"🍚 食堂",
     "购物":"🛒 购物（世纪星/报刊亭）",
     "风险":"⚡ 风险行动",
+    "师长":"👨‍🏫 师长",
   };
   // 添加分类标签
   groupOrder.forEach(g => {
@@ -1799,24 +2157,37 @@ function makeActionBtn(a) {
     effStr = Object.keys(a.eff).map(k => {
       const v = a.eff[k];
       const sign = v >= 0 ? "+" : "";
-      const name = ATTRS.find(x => x.key === k)?.name || k;
+      // 好感度后缀
+      if (k.endsWith("_affection")) {
+        const cid = k.replace("_affection","");
+        const cn = (CHARACTERS[cid] && CHARACTERS[cid].name) || cid;
+        return `${cn}好感${sign}${v}`;
+      }
+      const name = ATTRS.find(x => x.key === k)?.name
+        || (k === "stress" ? "😵 压力" : (k === "money" ? "💰 零花钱" : k));
       return `${name}${sign}${v}`;
     }).join(" ");
   }
   let costStr = a.cost ? ` · 花${a.cost.money||0}元` : "";
-  btn.innerHTML = `<div class="act-name">${a.name}</div><div class="act-eff">${effStr}${costStr}</div>`;
+  let rewardStr = a.reward && a.reward.money ? ` · 奖${a.reward.money}元` : "";
+  btn.innerHTML = `<div class="act-name">${a.name}</div><div class="act-eff">${effStr}${costStr}${rewardStr}</div>`;
   btn.onclick = () => onActionClick(a);
   return btn;
 }
 
 function updateActionAvailability() {
   const btns = document.querySelectorAll(".action-btn");
+  const pool = isHoliday() ? HOLIDAY_ACTIONS : ACTIONS;
   btns.forEach(btn => {
     const id = btn.dataset.id;
-    const a = ACTIONS.find(x => x.id === id);
+    const a = pool.find(x => x.id === id) || ACTIONS.find(x => x.id === id);
     if (!a) return;
     let disabled = false;
     if (a.cost && a.cost.money && (state.attrs.money||0) < a.cost.money) disabled = true;
+    // 社团活动：每周仅1次
+    if (a.tag === "社团" && state.clubUsedThisWeek) disabled = true;
+    // 已购买的奢侈品不可重复购买
+    if (isDeviceActionAndOwned(a)) disabled = true;
     btn.disabled = disabled;
   });
 }
@@ -1825,10 +2196,36 @@ function hideActionBar() {
   document.getElementById("action-bar").innerHTML = "";
 }
 
+/* 判断是否为已拥有的设备类购物行动（不可重复购买） */
+function isDeviceActionAndOwned(action) {
+  const d = state.devices || {};
+  const map = {
+    buy_magazine: "magazine",
+    buy_football_mag: "football_mag",
+    buy_esports_mag: "esports_mag",
+    buy_phone: "phone",
+    buy_itouch: "itouch",
+  };
+  const key = map[action.id];
+  return key && d[key];
+}
+
 function onActionClick(action) {
   if (state.phase !== "freeAction") return;
-  // 检查花费
-  if (action.cost && action.cost.money && (state.attrs.money||0) < action.cost.money) {
+  // 食堂行动（eat_*）伙食费已由周费覆盖，不扣行动本身花费
+  const isMealAction = action.tag === "食堂";
+  // 社团活动：每周仅1次
+  if (action.tag === "社团" && state.clubUsedThisWeek) {
+    showToast([{name:"本周已参加过社团活动", v:0}]);
+    return;
+  }
+  // 已购买的奢侈品不可重复购买
+  if (isDeviceActionAndOwned(action)) {
+    showToast([{name:"已拥有该物品，无需重复购买", v:0}]);
+    return;
+  }
+  // 检查花费（食堂行动免扣）
+  if (!isMealAction && action.cost && action.cost.money && (state.attrs.money||0) < action.cost.money) {
     showToast([{name:"零花钱不足", v:0}]);
     return;
   }
@@ -1837,69 +2234,69 @@ function onActionClick(action) {
     showCompanionPicker(action);
     return;
   }
-  // 扣除花费
-  if (action.cost && action.cost.money) state.attrs.money -= action.cost.money;
+  // 扣除花费（食堂行动免扣）
+  if (!isMealAction && action.cost && action.cost.money) state.attrs.money -= action.cost.money;
   // 处理特殊效果
   if (action.special === "lottery") {
-    // 买彩票：30%概率中奖
+    // 买彩票：30%概率中奖 —— 用模态框显示结果，手动关闭
     const win = Math.random() < 0.3;
+    let prize = 0, body, deltas = [], isBad = false;
     if (win) {
       const prizes = [10, 20, 50, 100, 200, 500];
-      const prize = prizes[Math.floor(Math.random()*prizes.length)];
+      prize = prizes[Math.floor(Math.random()*prizes.length)];
       state.attrs.money = (state.attrs.money||0) + prize;
-      showToast([{name:`中奖！+${prize}元`, v:prize}]);
-      addNarrationToDialogue(`你刮开彩票——中了 ${prize} 元！`);
+      body = `你刮开彩票——<b style="color:var(--green-bright)">中了 ${prize} 元！</b> 🎉`;
+      deltas = [{name:"中奖奖金", v:prize}];
     } else {
-      showToast([{name:"没中奖", v:0}]);
-      addNarrationToDialogue(`你刮开彩票——"谢谢惠顾"。`);
+      body = `你刮开彩票——"谢谢惠顾"。`;
+      isBad = true;
     }
+    hideActionBar();
+    showRiskResultModal("🎟️ 彩票结果", body, deltas, () => {
+      applyEffects(action.eff);
+      applyAcademicDecline(action);
+      advanceTime();
+    }, isBad);
+    return;
   } else if (action.id === "buy_phone" || action.id === "buy_itouch") {
     const item = action.id === "buy_phone" ? "📱 手机" : "🎧 iTouch";
     addNarrationToDialogue(`你偷偷买下${item}，藏在书包最深处……回家再慢慢玩。`);
-    if (action.id === "buy_phone") state.flags.hasPhone = true;
-  } else if (action.special === "borrow_phone") {
-    // 借同学手机玩：30%概率被老师没收
-    const caught = Math.random() < 0.30;
-    if (caught) {
-      const fine = 50;
-      state.attrs.money = Math.max(0, (state.attrs.money||0) - fine);
-      state.attrs.intelligence = Math.max(0, (state.attrs.intelligence||0) - 2);
-      state.attrs.stress = (state.attrs.stress||0) + 5;
-      showToast([{name:`被没收！-${fine}元`, v:-fine}]);
-      addNarrationToDialogue(`📵 上课偷玩被老师逮个正着，手机被没收！家长来校领人，被骂了一顿。零花钱 -${fine}，智力 -2，压力 +5。`);
-      // 不应用原本的好效果
-      advanceTime();
-      return;
-    } else {
-      addNarrationToDialogue(`🤳 你偷偷借了同学的手机玩了一把，没被发现，刺激！`);
+    if (action.id === "buy_phone") { state.flags.hasPhone = true; state.devices.phone = true; }
+    else { state.devices.itouch = true; }
+  } else if (action.id === "buy_magazine") {
+    state.devices.magazine = true;
+    addNarrationToDialogue(`📰 你买下《读者》，塞进抽屉，随时可以翻看。`);
+  } else if (action.id === "buy_football_mag") {
+    state.devices.football_mag = true;
+    addNarrationToDialogue(`⚽ 你买下《足球周刊》，宿舍传阅起来。`);
+  } else if (action.id === "buy_esports_mag") {
+    state.devices.esports_mag = true;
+    addNarrationToDialogue(`🕹️ 你买下《电子竞技》，舍友眼睛都亮了。`);
+  } else if (action.special === "ask_teacher") {
+    // 动态绑定当前班主任好感
+    const tid = state.chapter >= 3 ? "liu_teacher" : "chen_teacher";
+    applyEffects({ intelligence:2, stress:1, stamina:-1, [`${tid}_affection`]:3 });
+    addNarrationToDialogue(`👨‍🏫 你去向${CHARACTERS[tid].name}请教问题，老师耐心讲解，你有收获。`);
+    if (action.reward && action.reward.money) {
+      state.attrs.money = (state.attrs.money||0) + action.reward.money;
     }
-  } else if (action.special === "sneak_netbar") {
-    // 半夜溜去网吧：25%概率被抓
-    const caught = Math.random() < 0.25;
-    if (caught) {
-      const fine = 100;
-      state.attrs.money = Math.max(0, (state.attrs.money||0) - fine);
-      state.attrs.intelligence = Math.max(0, (state.attrs.intelligence||0) - 3);
-      state.attrs.math = Math.max(0, (state.attrs.math||0) - 2);
-      state.attrs.english = Math.max(0, (state.attrs.english||0) - 2);
-      state.attrs.stress = (state.attrs.stress||0) + 10;
-      showToast([{name:`被抓！-${fine}元`, v:-fine}]);
-      addNarrationToDialogue(`🚨 半夜溜去网吧，被宿管查寝发现！通报批评，家长被叫来学校。零花钱 -${fine}，智力 -3，数学/英语各 -2，压力 +10。`);
-      // 不应用原本的好效果
-      advanceTime();
-      return;
-    } else {
-      addNarrationToDialogue(`🌙 你翻墙溜出学校去网吧开黑，安全返回！刺激又过瘾。`);
-    }
+    advanceTime();
+    return;
   }
   applyEffects(action.eff);
+  // 假期/特殊行动的奖励（如走亲戚红包）
+  if (action.reward && action.reward.money) {
+    state.attrs.money = (state.attrs.money||0) + action.reward.money;
+  }
+  // 非学习类行动：学业属性下降
+  applyAcademicDecline(action);
   // 推进时间
   advanceTime();
 }
 
 /* ---------- 同伴选择系统 ---------- */
 /* 返回某角色对该行动的意愿："yes"/"no"/"maybe" */
-function getWillingness(charId, action) {
+function getBaseWillingness(charId, action) {
   const c = CHARACTERS[charId];
   if (!c) return "no";
   if (charId === state.playerCharId) return "no"; // 不能选自己
@@ -1979,6 +2376,20 @@ function getWillingness(charId, action) {
   return "maybe";
 }
 
+/* 好感度修正：高好感度提升同伴接受意愿
+ * 每 30 好感度提升一档（no→maybe→yes），上限 2 档
+ * 即好感 30+ 从硬拒绝升为可能、60+ 从硬拒绝升为同意；maybe 同理 */
+function getWillingness(charId, action) {
+  const base = getBaseWillingness(charId, action);
+  if (base === "yes") return "yes";
+  const aff = state.affections[charId] || 0;
+  if (aff <= 0) return base;
+  let level = base === "no" ? 0 : 1; // maybe=1
+  const bonus = Math.min(2, Math.floor(aff / 30));
+  level = Math.min(2, level + bonus);
+  return level === 2 ? "yes" : (level === 1 ? "maybe" : "no");
+}
+
 /* 同伴回应台词 */
 function getCompanionResponse(charId, action, agreed) {
   const c = CHARACTERS[charId];
@@ -2037,7 +2448,9 @@ function showCompanionPicker(action) {
   hint.className = "narration";
   hint.style.fontSize = "11px";
   hint.style.color = "var(--text-dim)";
-  hint.textContent = action.tag === "食堂" ? "（食堂可邀请多人同桌，每人 +2 好感）" : "（不同人会有不同回应；好学生通常不会去网吧）";
+  hint.textContent = action.tag === "食堂" ? "（食堂可邀请多人同桌，每人 +2 好感）"
+    : action.id === "borrow_phone" ? "（只能找有手机的同学借：走读生、刘刚鹏等）"
+    : "（不同人会有不同回应；好学生通常不会去网吧）";
   da.appendChild(hint);
   // 选择区
   const choiceArea = document.getElementById("choice-area");
@@ -2063,6 +2476,8 @@ function showCompanionPicker(action) {
   Object.keys(CHARACTERS).forEach(id => {
     if (id === state.playerCharId) return;
     const c = CHARACTERS[id];
+    // 借手机：只能找有手机的同学借
+    if (action.id === "borrow_phone" && !charHasPhone(id)) return;
     // 只显示部分关键角色 + 同宿舍 + 已有互动的
     const isKey = KEY_CHARS.includes(id);
     const isSameDorm = c.dorm && state.dorm && c.dorm === DORMS[state.dorm]?.name?.replace("宿舍","");
@@ -2128,7 +2543,9 @@ function makeCompanionBtn(charId, c, action, willingness) {
     // 判断是否同意
     let agreed = willingness === "yes";
     if (willingness === "maybe") {
-      agreed = Math.random() < 0.5;
+      // 好感度越高越可能同意：50% 起，每点好感 +1%，上限 90%
+      const p = Math.min(0.9, 0.5 + aff * 0.01);
+      agreed = Math.random() < p;
     }
     const resp = getCompanionResponse(charId, action, agreed);
     addNarrationToDialogue(`🎭 ${resp}`);
@@ -2190,8 +2607,9 @@ function showMultiCompanionPicker(action) {
     const aff = state.affections[id] || 0;
     btn.innerHTML = `${c.gender==="female"?"👧":"👦"} ${c.name} <span style="font-size:10px;color:var(--text-dim)">好感${aff}</span>`;
     btn.onclick = () => {
-      if (selected.has(id)) { selected.delete(id); btn.classList.remove("selected"); btn.style.background=""; }
-      else { selected.add(id); btn.classList.add("selected"); btn.style.background="var(--neon-dim)"; }
+      if (selected.has(id)) { selected.delete(id); btn.classList.remove("selected"); }
+      else { selected.add(id); btn.classList.add("selected"); }
+      updateConfirmLabel();
     };
     grid.appendChild(btn);
   });
@@ -2202,15 +2620,35 @@ function showMultiCompanionPicker(action) {
   confirmRow.style.marginTop = "8px";
   const confirmBtn = document.createElement("button");
   confirmBtn.className = "choice-btn";
-  confirmBtn.textContent = "✓ 确认同桌";
+  // 请客吃饭：花费按人头计算（每人 20 元，基础 20 元在 executeAction 中扣除）
+  const perHead = 20;
+  const updateConfirmLabel = () => {
+    if (action.id === "eat_treat") {
+      const total = perHead * (selected.size + 1);
+      confirmBtn.innerHTML = `✓ 确认同桌 <span style="font-size:10px;color:var(--text-dim)">（共 ${selected.size} 人 · 合计 ${total} 元）</span>`;
+    } else {
+      confirmBtn.textContent = "✓ 确认同桌";
+    }
+  };
+  updateConfirmLabel();
   confirmBtn.style.background = "linear-gradient(90deg,var(--neon),var(--neon-dim))";
   confirmBtn.onclick = () => {
-    choiceArea.innerHTML = "";
     if (!selected.size) {
+      choiceArea.innerHTML = "";
       addNarrationToDialogue(`🚶 你独自${action.name}。`);
       executeAction(action, null);
       return;
     }
+    // eat_treat：额外扣除 (人头数-1)*20 元（基础 20 元由 executeAction 扣除）
+    if (action.id === "eat_treat") {
+      const extra = perHead * (selected.size - 1);
+      if ((state.attrs.money||0) < extra + (action.cost?.money||0)) {
+        addNarrationToDialogue(`💔 零花钱不够请这么多人吃饭（还需 ${extra + (action.cost?.money||0)} 元）。`);
+        return;
+      }
+      if (extra > 0) state.attrs.money -= extra;
+    }
+    choiceArea.innerHTML = "";
     // 把每个同桌的 +2 好感注入 eff，再执行
     const names = [];
     [...selected].forEach(id => names.push(CHARACTERS[id].name));
@@ -2229,8 +2667,18 @@ function showMultiCompanionPicker(action) {
 
 /* 执行行动（含同伴加成） */
 function executeAction(action, companionId) {
-  // 扣除花费
-  if (action.cost && action.cost.money) state.attrs.money -= action.cost.money;
+  // 食堂行动（eat_*）伙食费已由周费覆盖，不扣行动本身花费
+  const isMealAction = action.tag === "食堂";
+  if (!isMealAction && action.cost && action.cost.money) state.attrs.money -= action.cost.money;
+  // 统计本月 study* 学习行动次数（月末检查用）
+  if (action.id && action.id.startsWith("study")) state.monthStudyActions = (state.monthStudyActions||0) + 1;
+  // 社团活动：标记本周已用
+  if (action.tag === "社团") state.clubUsedThisWeek = true;
+  // 风险行动（borrow_phone/sneak_netbar）：先判定，成功才应用好效果，结果用模态框手动关闭
+  if (action.special === "borrow_phone" || action.special === "sneak_netbar") {
+    handleRiskAction(action, companionId);
+    return;
+  }
   // 应用行动效果
   if (action.eff) {
     const eff = {...action.eff};
@@ -2251,38 +2699,58 @@ function executeAction(action, companionId) {
           eff.intelligence = (eff.intelligence || 0) + 1;
         }
       }
+      // 情侣加成：与情侣一起行动，额外好感+2、压力-2
+      if (state.couples && state.couples[companionId]) {
+        eff[`${companionId}_affection`] = (eff[`${companionId}_affection`] || 0) + 2;
+        eff.stress = (eff.stress || 0) - 2;
+      }
     }
     // 月计划加成
     applyMonthPlanBonus(action, eff, companionId);
     applyEffects(eff);
-  }
-  // 处理特殊效果（lottery/borrow_phone/sneak_netbar）
-  if (action.special === "lottery") {
-    const win = Math.random() < 0.3;
-    if (win) {
-      const prizes = [10, 20, 50, 100, 200, 500];
-      const prize = prizes[Math.floor(Math.random()*prizes.length)];
-      state.attrs.money = (state.attrs.money||0) + prize;
-      showToast([{name:`中奖！+${prize}元`, v:prize}]);
-      addNarrationToDialogue(`你刮开彩票——中了 ${prize} 元！`);
-    } else {
-      showToast([{name:"没中奖", v:0}]);
-      addNarrationToDialogue(`你刮开彩票——"谢谢惠顾"。`);
+    // 非学习类行动：学业属性下降
+    applyAcademicDecline(action);
+    // 多人恋爱被发现检查：有2+情侣且与某情侣行动时，15%概率被发现
+    if (companionId && state.couples && state.couples[companionId]) {
+      const coupleIds = Object.keys(state.couples).filter(k => state.couples[k]);
+      if (coupleIds.length >= 2) {
+        checkMultiCoupleDiscovery(companionId, coupleIds);
+      }
     }
-  } else if (action.special === "borrow_phone") {
-    const caught = Math.random() < 0.30;
+  }
+  // 假期/特殊行动的奖励（如走亲戚红包）
+  if (action.reward && action.reward.money) {
+    state.attrs.money = (state.attrs.money||0) + action.reward.money;
+  }
+  advanceTime();
+}
+
+/* 风险行动处理：borrow_phone / sneak_netbar */
+function handleRiskAction(action, companionId) {
+  const id = action.special;
+  let caught = false, title = "", body = "", deltas = [], isBad = false;
+  if (id === "borrow_phone") {
+    caught = Math.random() < 0.30;
     if (caught) {
       const fine = 50;
       state.attrs.money = Math.max(0, (state.attrs.money||0) - fine);
       state.attrs.intelligence = Math.max(0, (state.attrs.intelligence||0) - 2);
       state.attrs.stress = (state.attrs.stress||0) + 5;
-      showToast([{name:`被没收！-${fine}元`, v:-fine}]);
-      addNarrationToDialogue(`📵 上课偷玩被老师逮个正着，手机被没收！家长来校领人，被骂了一顿。零花钱 -${fine}，智力 -2，压力 +5。`);
-      advanceTime();
-      return;
+      // 老师、家长好感下降
+      const tid = state.chapter >= 3 ? "liu_teacher" : "chen_teacher";
+      state.affections[tid] = Math.max(0, (state.affections[tid]||0) - 5);
+      state.affections.father = Math.max(0, (state.affections.father||0) - 3);
+      state.affections.mother = Math.max(0, (state.affections.mother||0) - 3);
+      title = "📵 被没收了！";
+      body = "上课偷玩被老师逮个正着，手机被没收！家长来校领人，被骂了一顿。";
+      deltas = [{name:"零花钱", v:-fine}, {name:"智力", v:-2}, {name:"压力", v:5}, {name:CHARACTERS[tid].name+"好感", v:-5}, {name:"父亲好感", v:-3}, {name:"母亲好感", v:-3}];
+      isBad = true;
+    } else {
+      title = "🤳 借手机成功";
+      body = "你偷偷借了同学的手机玩了一把，没被发现，刺激！";
     }
-  } else if (action.special === "sneak_netbar") {
-    const caught = Math.random() < 0.25;
+  } else if (id === "sneak_netbar") {
+    caught = Math.random() < 0.25;
     if (caught) {
       const fine = 100;
       state.attrs.money = Math.max(0, (state.attrs.money||0) - fine);
@@ -2290,13 +2758,83 @@ function executeAction(action, companionId) {
       state.attrs.math = Math.max(0, (state.attrs.math||0) - 2);
       state.attrs.english = Math.max(0, (state.attrs.english||0) - 2);
       state.attrs.stress = (state.attrs.stress||0) + 10;
-      showToast([{name:`被抓！-${fine}元`, v:-fine}]);
-      addNarrationToDialogue(`🚨 半夜溜去网吧，被宿管查寝发现！通报批评，家长被叫来学校。零花钱 -${fine}，智力 -3，数学/英语各 -2，压力 +10。`);
-      advanceTime();
-      return;
+      // 老师、家长好感下降（半夜溜网吧更严重）
+      const tid = state.chapter >= 3 ? "liu_teacher" : "chen_teacher";
+      state.affections[tid] = Math.max(0, (state.affections[tid]||0) - 8);
+      state.affections.father = Math.max(0, (state.affections.father||0) - 6);
+      state.affections.mother = Math.max(0, (state.affections.mother||0) - 6);
+      title = "🚨 被抓了！";
+      body = "半夜溜去网吧，被宿管查寝发现！通报批评，家长被叫来学校。";
+      deltas = [{name:"零花钱", v:-fine}, {name:"智力", v:-3}, {name:"数学", v:-2}, {name:"英语", v:-2}, {name:"压力", v:10}, {name:CHARACTERS[tid].name+"好感", v:-8}, {name:"父亲好感", v:-6}, {name:"母亲好感", v:-6}];
+      isBad = true;
+    } else {
+      title = "🌙 安全返回";
+      body = "你翻墙溜出学校去网吧开黑，安全返回！刺激又过瘾。";
     }
   }
-  advanceTime();
+  // 成功时才应用好效果（含同伴加成、月计划加成）
+  if (!caught && action.eff) {
+    const eff = {...action.eff};
+    if (companionId) {
+      eff[`${companionId}_affection`] = (eff[`${companionId}_affection`] || 0) + 2;
+      const c = CHARACTERS[companionId];
+      if (c && c.hobby && c.hobby.includes("lol")) {
+        eff.lol_skill = (eff.lol_skill || 0) + 2;
+      }
+      // 情侣加成
+      if (state.couples && state.couples[companionId]) {
+        eff[`${companionId}_affection`] = (eff[`${companionId}_affection`] || 0) + 2;
+        eff.stress = (eff.stress || 0) - 2;
+      }
+    }
+    applyMonthPlanBonus(action, eff, companionId);
+    applyEffects(eff);
+  } else {
+    // 被抓：仅刷新面板（penalty 已直接修改 attrs）
+    renderAttrs(); renderChars();
+  }
+  hideActionBar();
+  showRiskResultModal(title, body, deltas, () => {
+    // 风险行动（借手机/溜网吧）非学习类，学业属性下降
+    applyAcademicDecline(action);
+    advanceTime();
+  }, isBad);
+}
+
+/* 多人恋爱被发现检查：有2+情侣且与某情侣行动时调用 */
+function checkMultiCoupleDiscovery(currentPartnerId, coupleIds) {
+  if (coupleIds.length < 2) return;
+  // 15% 发现概率（情侣越多概率越高）
+  const prob = 0.15 + (coupleIds.length - 2) * 0.05;
+  if (Math.random() > prob) return;
+  // 被发现：严重后果
+  const otherId = coupleIds.find(id => id !== currentPartnerId);
+  const cur = CHARACTERS[currentPartnerId]?.name || "女友";
+  const oth = otherId ? (CHARACTERS[otherId]?.name || "另一女友") : "另一女友";
+  // 两女生好感降为负数
+  state.affections[currentPartnerId] = -20;
+  if (otherId) state.affections[otherId] = -20;
+  // 人气、魅力下降
+  const popDrop = 15, charmDrop = 10;
+  state.attrs.popularity = Math.max(0, (state.attrs.popularity||0) - popDrop);
+  state.attrs.charm = Math.max(0, (state.attrs.charm||0) - charmDrop);
+  // 压力大增
+  state.attrs.stress = Math.min(100, (state.attrs.stress||0) + 20);
+  // 清除情侣关系（分手）
+  state.couples = {};
+  const deltas = [
+    {name: cur + "好感", v: -20},
+    {name: oth + "好感", v: -20},
+    {name: "人气", v: -popDrop},
+    {name: "魅力", v: -charmDrop},
+    {name: "压力", v: 20},
+  ];
+  hideActionBar();
+  showRiskResultModal("💔 脚踏两条船败露！",
+    `糟糕！${oth} 撞见你和 ${cur} 在一起，事情败露了！<br>两位女生都愤怒地与你分手，同学们议论纷纷，你的名声一落千丈。<br><span style="color:var(--text-dim);font-size:12px">所有情侣关系解除，需重新经营好感。</span>`,
+    deltas, () => {
+      renderTopbar(); renderAttrs(); renderChars();
+    }, true);
 }
 
 function addNarrationToDialogue(text) {
@@ -2308,99 +2846,228 @@ function addNarrationToDialogue(text) {
   da.scrollTop = da.scrollHeight;
 }
 
-/* ---------- 时间推进 ---------- */
+/* ---------- 风险活动结果模态框（手动关闭） ---------- */
+function showRiskResultModal(title, bodyHtml, deltas, onClose, isBad) {
+  const overlay = document.createElement("div");
+  overlay.className = "risk-modal-overlay";
+  let deltasHtml = "";
+  if (deltas && deltas.length) {
+    deltasHtml = `<div class="risk-modal-deltas">${deltas.map(d => {
+      const cls = d.v >= 0 ? "pos" : "neg";
+      const sign = d.v >= 0 ? "+" : "";
+      return `<span class="${cls}">${d.name} ${sign}${d.v}</span>`;
+    }).join("")}</div>`;
+  }
+  overlay.innerHTML = `<div class="risk-modal">
+    <div class="risk-modal-title${isBad ? " bad" : ""}">${title}</div>
+    <div class="risk-modal-body">${bodyHtml}</div>
+    ${deltasHtml}
+    <button class="risk-modal-btn">确 认</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  const btn = overlay.querySelector(".risk-modal-btn");
+  btn.onclick = () => {
+    overlay.remove();
+    if (typeof onClose === "function") onClose();
+  };
+}
+
+/* ---------- 是否假期（按月推进系统：state.inHoliday 直接判定） ---------- */
+function isHoliday() {
+  return !!state.inHoliday;
+}
+
+/* ---------- 某角色是否有手机 ---------- */
+function charHasPhone(id) {
+  const c = CHARACTERS[id];
+  if (!c) return false;
+  if (c.dorm === "走读") return true;       // 走读生在家有手机
+  if (c.hasPhone) return true;              // 显式标记
+  return false;
+}
+
+/* ---------- 时间推进（按月/周推进） ---------- */
 function advanceTime() {
-  state.slot++;
-  let dayChanged = false;
-  if (state.slot >= 5) {
-    state.slot = 0;
-    state.day++;
-    dayChanged = true;
-    // 每天结束：压力微调（睡眠恢复）
-    if ((state.attrs.stress||0) > 0) state.attrs.stress = Math.max(0, state.attrs.stress - 2);
-    if ((state.attrs.stamina||0) < 100) state.attrs.stamina = Math.min(100, state.attrs.stamina + 5);
-    // 娱乐放松计划：每天额外压力-1
-    if (state.monthPlan && state.monthPlan.focus === "lol" && (state.attrs.stress||0) > 0) {
-      state.attrs.stress = Math.max(0, state.attrs.stress - 1);
-    }
+  // 假期内：消耗假期行动点
+  if (state.inHoliday) {
+    state.holidayActionsLeft--;
+    if (state.holidayActionsLeft > 0) { postActionFlavor(); return; }
+    advanceHolidayWeek();
+    return;
   }
-  // 每月固定发放零花钱 100 元（月份变化时）
-  const curMonth = getCurMonth();
-  if (curMonth !== state.lastAllowanceMonth) {
-    state.attrs.money = (state.attrs.money||0) + 100;
-    state.lastAllowanceMonth = curMonth;
-    addNarrationToDialogue(`📅 月初，家长给了 100 元零花钱。`);
-    renderTopbar();
-    renderAttrs();
-    // 月初制定本月计划（仅自由行动阶段，且未到高考）
-    if (state.phase === "freeAction" && !state.flags.ch4Complete && state.flags.prologueComplete) {
-      if (state.lastPlanMonth !== curMonth) {
-        state.lastPlanMonth = curMonth;
-        showMonthlyPlanPanel();
-        return;
-      }
-    }
+  state.weekActionsLeft--;
+  state.monthlyActionsDone++;
+  maybeRecoverPerAction();
+  // 周内仍有行动点：可能触发半天假，继续自由行动
+  if (state.weekActionsLeft > 0) {
+    if (tryTriggerHalfdayEvent()) return;  // 进入半天假假期，UI 已切换
+    postActionFlavor();
+    return;
   }
-  renderTopbar();
-  renderAttrs();
-  // 高考前最后冲刺触发
-  if (maybeTriggerGaokao()) return;
-  // 月中考后随机事件（每月中旬触发一次）
-  if (dayChanged && tryTriggerRandomEvent()) return;
-  // 角色支线剧情触发（每日检查一次）
-  if (dayChanged && tryTriggerStoryline()) return;
-  // 月末考试系统（月考/期中/期末/模拟考）
-  if (dayChanged && tryTriggerExam()) return;
-  // 触发章节事件
-  if (!checkChapterTrigger()) {
-    // 普通时段继续
-    if (state.phase === "freeAction") {
-      document.getElementById("dialogue-area").innerHTML = `<div class="narration">▸ ${getTimeFlavorText()}</div>`;
-      document.getElementById("choice-area").innerHTML = "";
-      renderActionBar();
-    }
+  advanceToNextWeek();
+}
+
+/* 进入下一周；满 4 周触发月末月考 */
+function advanceToNextWeek() {
+  state.weekIdx++;
+  if (state.weekIdx >= 4) { triggerMonthEnd(); return; }
+  state.weekActionsLeft = 4;
+  state.clubUsedThisWeek = false;  // 周初重置社团活动次数
+  deductWeeklyMealFee();   // 周初扣除本周伙食费
+  if (state.weekIdx === 2 && tryTriggerMiniMonthLeave()) return; // 小月假多行动假期
+  if (state.weekIdx >= 1) tryTriggerRandomEvent();
+  tryTriggerStoryline();
+  if (tryTriggerChapterNode()) return;   // 高三节点式推进
+  if (checkChapterTrigger()) return;     // 章节月份触发
+  syncDerivedDay();
+  renderTopbar(); renderAttrs(); renderChars();
+  postActionFlavor();
+}
+
+/* 每周伙食费扣除：基于月计划 mealPlan
+   frugal=70元/周(体力-1), normal=140元/周, good=210元/周(体力+2/魅力+1) */
+function deductWeeklyMealFee() {
+  const plan = state.mealPlan || "normal";
+  let fee = 140, sideEff = {};
+  if (plan === "frugal") { fee = 70; sideEff = { stamina: -1 }; }
+  else if (plan === "good") { fee = 210; sideEff = { stamina: 2, charm: 1 }; }
+  state.attrs.money = Math.max(0, (state.attrs.money||0) - fee);
+  applyEffects(sideEff, true);
+  state.weekMealDeducted = true;
+  const planName = plan === "frugal" ? "节约" : (plan === "good" ? "吃好" : "普通");
+  addNarrationToDialogue(`🍚 本周伙食费 ${fee} 元已扣除（${planName}标准）。`);
+}
+
+/* 月末：触发月考/期中/期末 */
+function triggerMonthEnd() {
+  // 月末学习检查：本月未执行任何 study* 行动则成绩/智力下降
+  if ((state.monthStudyActions||0) === 0) {
+    const drop = 3;
+    state.attrs.chinese = Math.max(0, (state.attrs.chinese||0) - drop);
+    state.attrs.math = Math.max(0, (state.attrs.math||0) - drop);
+    state.attrs.english = Math.max(0, (state.attrs.english||0) - drop);
+    state.attrs.comprehensive = Math.max(0, (state.attrs.comprehensive||0) - drop);
+    state.attrs.intelligence = Math.max(0, (state.attrs.intelligence||0) - 2);
+    addNarrationToDialogue(`📉 本月未曾学习，各科成绩 -${drop}、智力 -2（荒废学业）。`);
+  }
+  triggerExamScene(examTypeFor(state.year, state.month), onExamDone);
+}
+
+/* 考试结束回调：月假 → 切下月 → 月初零花钱 → 章节触发/月计划 */
+function onExamDone() {
+  triggerMonthLeaveHoliday(() => {
+    state.month++;
+    if (state.month > 12) { state.month = 1; state.year++; }
+    state.weekIdx = 0; state.weekActionsLeft = 4; state.monthlyActionsDone = 0;
+    maybeStartWinterSummer();   // 1/7 月整月假期
+    grantMonthlyAllowance();
+    // 重置本月学习计数与伙食扣费标志（伙食标准在月计划确认时设置，此处先重置）
+    state.monthStudyActions = 0;
+    state.weekMealDeducted = false;
+    state.clubUsedThisWeek = false;  // 月初重置社团活动次数
+    syncDerivedDay();
+    renderTopbar(); renderAttrs();
+    // 进入新月时优先触发章节（世界杯/S4/高三等特殊月份）
+    if (checkChapterTrigger()) return;
+    if (tryTriggerChapterNode()) return;   // 高三节点：二模/三模/高考
+    if (!state.flags.ch4Complete) showMonthlyPlanPanel();
+    else postActionFlavor();
+  });
+}
+
+function examTypeFor(y, m) {
+  if (m === 11 || m === 4) return "期中考试";
+  if (m === 12 || m === 6) return "期末考";  // 期末考在寒暑假前的 12/6 月
+  return "月考";
+}
+
+/* 月初零花钱：每月 +100（9 月起始已在 initState 给过，此处从 10 月起发放） */
+function grantMonthlyAllowance() {
+  const ym = state.year * 12 + (state.month - 1);
+  const last = state._lastAllowanceYM == null ? (2013 * 12 + 8) : state._lastAllowanceYM;
+  if (ym > last) {
+    const base = 400;  // 月零花钱 400 元（伙食费经济平衡）
+    // 家长好感加成：father/mother 平均每 20 点 +20 元，上限 +100
+    const fa = state.affections.father || 0;
+    const ma = state.affections.mother || 0;
+    const parentAvg = (fa + ma) / 2;
+    const bonus = Math.min(100, Math.floor(parentAvg / 20) * 20);
+    const total = base + bonus;
+    state.attrs.money = (state.attrs.money || 0) + total;
+    state._lastAllowanceYM = ym;
+    state.lastAllowanceMonth = state.month;
+    if (bonus > 0) addNarrationToDialogue(`📅 月初，家长给了 ${total} 元零花钱（含家长奖励 ${bonus} 元）。`);
+    else addNarrationToDialogue(`📅 月初，家长给了 ${total} 元零花钱。`);
   }
 }
 
-/* ---------- 当前月份 ---------- */
-function getCurMonth() {
-  const start = new Date(2013, 8, 1);
-  const cur = new Date(start);
-  cur.setDate(start.getDate() + state.day - 1);
-  return cur.getMonth() + 1; // 1-12
+/* 每次行动后压力/体力微调 */
+function maybeRecoverPerAction() {
+  if ((state.attrs.stress||0) > 0) state.attrs.stress = Math.max(0, state.attrs.stress - 1);
+  if ((state.attrs.stamina||0) < 100) state.attrs.stamina = Math.min(100, state.attrs.stamina + 2);
+  if (state.monthPlan && state.monthPlan.focus === "lol" && (state.attrs.stress||0) > 0) {
+    state.attrs.stress = Math.max(0, state.attrs.stress - 1);
+  }
 }
 
-/* ---------- 当前年份 ---------- */
-function getCurYear() {
-  const start = new Date(2013, 8, 1);
-  const cur = new Date(start);
-  cur.setDate(start.getDate() + state.day - 1);
-  return cur.getFullYear();
+/* 自由行动状态下的常规刷新 */
+function postActionFlavor() {
+  if (state.phase !== "freeAction") return;
+  syncDerivedDay();
+  renderTopbar(); renderAttrs(); renderChars();
+  let html = `<div class="narration">▸ ${getTimeFlavorText()}</div>`;
+  // 合并显示学业下降消息
+  if (state._academicDeclineMsg) {
+    html += `<div class="narration" style="color:var(--text-dim);font-size:12px;">${state._academicDeclineMsg}</div>`;
+    state._academicDeclineMsg = null;
+  }
+  document.getElementById("dialogue-area").innerHTML = html;
+  document.getElementById("choice-area").innerHTML = "";
+  renderActionBar();
 }
 
-/* ---------- 考试系统（旧逻辑已迁移至下方月末考试改造，保留triggerExamScene） ---------- */
-function getCurDayOfMonth() {
-  const start = new Date(2013, 8, 1);
-  const cur = new Date(start);
-  cur.setDate(start.getDate() + state.day - 1);
-  return cur.getDate();
+/* 反算 state.day 以兼容旧 SCENES condition（月首距 2013.09.01 的天数 + weekIdx*7） */
+function syncDerivedDay() {
+  const monthStart = new Date(state.year, state.month - 1, 1);
+  const base = new Date(2013, 8, 1);
+  const offset = Math.round((monthStart - base) / 86400000);
+  state.day = offset + state.weekIdx * 7 + 1;
+  state.slot = 0;
+  state.freeActionsLeft = state.weekActionsLeft;
 }
 
-function triggerExamScene(examType) {
+/* ---------- 当前月份/年份/日期（基于 state.year/month/weekIdx） ---------- */
+function getCurMonth() { return state.month; }
+function getCurYear() { return state.year; }
+function getCurDayOfMonth() { return state.weekIdx * 7 + 1; }
+
+function triggerExamScene(examType, onDone) {
   state.phase = "scene";
   hideActionBar();
   const a = state.attrs;
-  // 成绩计算：基础(各科加权) + 智力加成 - 压力减成 + 随机扰动
-  const base = (a.chinese * 1.0 + a.math * 1.2 + a.english * 1.0 + a.comprehensive * 2.8);
+  // 成绩计算（高考750分体系：语文150+数学150+英语150+理综300）
+  // 各科属性(0-100) → 高考分(0-满分)：1点属性≈1.5分
+  const base = (a.chinese * 1.5 + a.math * 1.5 + a.english * 1.5 + a.comprehensive * 3.0);
   const intelBonus = (a.intelligence - 30) * 1.5;
   const stressPenalty = (a.stress || 0) * 0.5;
   const staminaBonus = (a.stamina - 50) * 0.3;
+  // 老师好感加成：每 10 点好感 +5 分，上限 +30；ch1/ch2=陈老师，ch3/ch4=刘老师
+  const teacherId = state.chapter >= 3 ? "liu_teacher" : "chen_teacher";
+  const teacherAff = state.affections[teacherId] || 0;
+  const teacherBonus = Math.min(30, Math.floor(teacherAff / 10) * 5);
   const noise = (Math.random() * 40 - 20); // ±20随机
-  const total = Math.max(0, Math.round(base + intelBonus + staminaBonus - stressPenalty + noise));
+  const total = Math.max(0, Math.min(750, Math.round(base + intelBonus + staminaBonus - stressPenalty + teacherBonus + noise)));
   const prev = state.lastExamScore;
   const diff = total - prev;
   state.lastExamScore = total;
   state.examCount++;
+  // 记录成绩历史（最近 8 次）
+  state.examHistory = state.examHistory || [];
+  // 排名：按高考分估算年级排名（参考实际：700分≈前5, 600分≈前30, 500分≈前60, 400分≈末尾）
+  const rankNoise = Math.random() * 4 - 2;
+  const rank = Math.max(1, Math.round((700 - total) / 5 + 1 + rankNoise));
+  state.examHistory.push({ type:examType, score:total, diff, rank, ym:`${state.year}-${String(state.month).padStart(2,"0")}`, teacher:teacherId });
+  if (state.examHistory.length > 8) state.examHistory.shift();
   // 计算奖励
   let reward = 0;
   let rewardAttrs = [];
@@ -2432,30 +3099,34 @@ function triggerExamScene(examType) {
     lines.push({ speaker: "📊", text: `这是你的首次考试，分数已记录。` });
   }
   // 排名（粗略）
-  const rank = Math.max(1, Math.round(60 - total / 10 + Math.random() * 5));
   lines.push({ speaker: "🏫", text: `年级排名：约 ${rank} 名。` + (rank <= 10 ? "🏆 不错！" : "") });
-  const teacherName = state.chapter >= 4 ? "刘老师" : "陈老师";
+  const teacherName = state.chapter >= 3 ? "刘老师" : "陈老师";
+  if (teacherBonus > 0) lines.push({ speaker: "👨‍🏫", text: `${teacherName}平时对你多有提点，这次成绩有 +${teacherBonus} 分加成。` });
   if (diff > 20) lines.push({ speaker: "👨‍🏫", text: `${teacherName}："进步神速，继续保持！"` });
   else if (diff < -20) lines.push({ speaker: "👨‍🏫", text: `${teacherName}："最近心思不在学习上？注意调整。"` });
   // 推进到结局画面
   lines.push({ speaker: "", text: "▸ 考试结束，回到日常。" });
-  playSceneInline(lines);
+  playSceneInline(lines, onDone);
 }
 
-/* 在自由行动中临时播放一个简单场景 */
-function playSceneInline(lines) {
+/* 在自由行动中临时播放一个简单场景（可选 onDone 回调，队列结束后调用） */
+function playSceneInline(lines, onDone) {
   // 用临时场景机制：渲染对话，结束后回到freeAction
   const da = document.getElementById("dialogue-area");
   da.innerHTML = "";
   state._inlineSceneQueue = lines.slice();
   state._inlineSceneResume = "freeAction";
+  state._inlineSceneOnDone = onDone || null;
   showNextInlineLine();
 }
 
 function showNextInlineLine() {
   const da = document.getElementById("dialogue-area");
   if (!state._inlineSceneQueue || !state._inlineSceneQueue.length) {
-    // 结束，回到自由行动
+    // 结束：若有 onDone 回调则调用（如月末考试后的切月逻辑），否则回到自由行动
+    const cb = state._inlineSceneOnDone;
+    state._inlineSceneOnDone = null;
+    if (cb) { cb(); return; }
     state.phase = "freeAction";
     renderTopbar();
     renderAttrs();
@@ -2487,15 +3158,17 @@ function showNextInlineLine() {
 }
 
 function getTimeFlavorText() {
-  const slot = state.slot;
-  const flavors = [
-    "清晨5:30，跑操铃声响起。新的一天开始了。",
-    "上午，第三节课。窗外阳光正好。",
-    "下午，第七节课。操场上有人在踢球。",
-    "晚自习。教室安静，只有翻书声。",
-    "深夜11点。宿舍熄灯了。",
+  if (state.inHoliday) {
+    const h = HOLIDAY_EVENTS[state.inHoliday];
+    return h ? `${h.name}，难得的休整时光。` : "假期中，时间过得飞快。";
+  }
+  const weekFlavors = [
+    "月初第一周，新的一月开始了。",
+    "第二周，月考将近，得加紧了。",
+    "第三周，月中，节奏平稳。",
+    "第四周，月末，月考在即。",
   ];
-  return flavors[slot] || "时间在流逝。";
+  return weekFlavors[state.weekIdx] || "时间在流逝。";
 }
 
 /* ============================================================
@@ -2508,10 +3181,13 @@ const MONTH_PLAN_FOCUSES = [
   { id:"math",      name:"📐 数学突破", desc:"本月数学相关行动 数学额外 +2", eff:"math" },
   { id:"english",   name:"🔤 英语突破", desc:"本月英语相关行动 英语额外 +2", eff:"english" },
   { id:"comp",      name:"🔬 理综突破", desc:"本月理综训练 理综额外 +2",     eff:"comp" },
+  { id:"chinese",   name:"📖 语文突破", desc:"本月语文相关行动 语文额外 +2", eff:"chinese" },
   { id:"sports",    name:"⚽ 体育锻炼", desc:"本月运动效果 +30%",            eff:"sports" },
   { id:"lol",       name:"🎮 娱乐放松", desc:"本月LOL额外 +2，每天压力 -1",  eff:"lol" },
   { id:"social",    name:"👥 社交拓展", desc:"本月好感获取 +30%",            eff:"social" },
-  { id:"money",     name:"💰 攒钱计划", desc:"月初额外 +50 元零花钱",         eff:"money" },
+  { id:"finance_frugal", name:"💰 节约攒钱", desc:"每周伙食70元(省70)，体力-1/周，攒钱买设备", eff:"finance_frugal" },
+  { id:"finance_normal", name:"🍚 普通伙食", desc:"每周伙食140元(默认)，均衡饮食", eff:"finance_normal" },
+  { id:"finance_good",   name:"🍲 吃好补身", desc:"每周伙食210元(多70)，体力+2/周+魅力+1，成绩-2", eff:"finance_good" },
 ];
 
 /* 显示月计划面板 */
@@ -2601,17 +3277,27 @@ function showMonthlyPlanPanel() {
   confirmBtn.onclick = () => {
     if (!chosenFocus) { alert("请选择主攻方向"); return; }
     state.monthPlan = { focus: chosenFocus, socialTarget: chosenSocial, month: getCurMonth() };
-    // 攒钱计划立即给钱
-    if (chosenFocus === "money") {
-      state.attrs.money = (state.attrs.money||0) + 50;
+    // 理财计划：设置本月伙食标准
+    if (chosenFocus === "finance_frugal") state.mealPlan = "frugal";
+    else if (chosenFocus === "finance_good") state.mealPlan = "good";
+    else if (chosenFocus === "finance_normal") state.mealPlan = "normal";
+    // 吃好计划立即应用成绩-2、首周魅力+1
+    if (chosenFocus === "finance_good") {
+      state.attrs.chinese = Math.max(0, (state.attrs.chinese||0) - 2);
+      state.attrs.math = Math.max(0, (state.attrs.math||0) - 2);
+      state.attrs.english = Math.max(0, (state.attrs.english||0) - 2);
+      state.attrs.comprehensive = Math.max(0, (state.attrs.comprehensive||0) - 2);
     }
     const f = MONTH_PLAN_FOCUSES.find(x => x.id === chosenFocus);
     addNarrationToDialogue(`📋 本月计划：${f.name}${chosenSocial ? "，重点交往 " + CHARACTERS[chosenSocial].name : ""}。`);
     // 返回自由行动
     state.phase = "freeAction";
+    // 月计划确认后扣除首周伙食费（理财计划已设置 mealPlan）
+    deductWeeklyMealFee();
     renderTopbar();
     renderAttrs();
     renderChars();
+    // 月初确认计划后进入本月第一周自由行动（月末月考由 advanceToNextWeek 触发）
     document.getElementById("dialogue-area").innerHTML = `<div class="narration">▸ ${getTimeFlavorText()}</div>`;
     document.getElementById("choice-area").innerHTML = "";
     renderActionBar();
@@ -2642,6 +3328,10 @@ function applyMonthPlanBonus(action, eff, companionId) {
     case "comp":
       if (id === "study_comp") eff.comprehensive = (eff.comprehensive || 0) + 2;
       break;
+    case "chinese":
+      if (id === "study_chinese") eff.chinese = (eff.chinese || 0) + 2;
+      else if (id === "study") eff.chinese = (eff.chinese || 0) + 1;
+      break;
     case "sports":
       if (isSports) {
         Object.keys(eff).forEach(k => {
@@ -2663,7 +3353,11 @@ function applyMonthPlanBonus(action, eff, companionId) {
         eff[`${plan.socialTarget}_affection`] = (eff[`${plan.socialTarget}_affection`] || 0) + 1;
       }
       break;
-    // money focus 在月初已一次性发放，此处不再处理
+    // finance_* 理财计划：伙食费在 deductWeeklyMealFee() 中处理，行动效果不额外加成
+    case "finance_frugal":
+    case "finance_normal":
+    case "finance_good":
+      break;
   }
 }
 
@@ -2671,35 +3365,53 @@ function applyMonthPlanBonus(action, eff, companionId) {
  *  月中随机事件（每月中旬触发一次，基于条件）
  * ============================================================ */
 const RANDOM_EVENTS = [
-  { id:"netbar_invite",   name:"网吧邀约",   minDay:13, maxDay:18, condition: () => true, scene:"random_netbar" },
-  { id:"football_invite",  name:"踢球邀约",   minDay:13, maxDay:18, condition: () => true, scene:"random_football" },
-  { id:"basketball_invite",name:"篮球邀约",   minDay:13, maxDay:18, condition: () => true, scene:"random_basketball" },
-  { id:"phone_borrow",     name:"借手机",     minDay:13, maxDay:18, condition: () => (state.attrs.money||0) >= 200 || hasPhoneItem(), scene:"random_phone_borrow" },
+  { id:"netbar_invite",    name:"网吧邀约",   minWeek:1, maxWeek:2, condition: () => true, scene:"random_netbar" },
+  { id:"football_invite",  name:"踢球邀约",   minWeek:1, maxWeek:2, condition: () => true, scene:"random_football" },
+  { id:"basketball_invite",name:"篮球邀约",   minWeek:1, maxWeek:2, condition: () => true, scene:"random_basketball" },
+  { id:"phone_borrow",     name:"借手机",     minWeek:1, maxWeek:2, condition: () => hasPhoneItem(), scene:"random_phone_borrow" },
+  { id:"magazine_borrow",  name:"借杂志",     minWeek:1, maxWeek:2, condition: () => hasMagazineItem(), scene:"random_magazine_borrow" },
 ];
 
-/* 是否拥有手机（简易判定：买过buy_phone则拥有） */
+/* 是否拥有手机 */
 function hasPhoneItem() {
-  return !!(state.flags && state.flags.hasPhone);
+  return !!(state.devices && state.devices.phone);
+}
+
+/* 是否拥有任意杂志 */
+function hasMagazineItem() {
+  const d = state.devices || {};
+  return !!(d.magazine || d.football_mag || d.esports_mag);
+}
+
+/* 设备加成：每件设备提升随机事件触发概率 8%，上限 +24% */
+function deviceEventBonus() {
+  const d = state.devices || {};
+  let n = 0;
+  ["magazine","football_mag","esports_mag","phone","itouch"].forEach(k => { if (d[k]) n++; });
+  return Math.min(24, n * 8);
 }
 
 function tryTriggerRandomEvent() {
   if (state.phase !== "freeAction") return false;
   if (!state.flags.prologueComplete) return false;
   if (state.flags.ch4Complete) return false; // 高考结束不再触发
+  if (state.inHoliday) return false;          // 假期不触发月中随机事件
   const month = getCurMonth();
-  const day = getCurDayOfMonth();
+  const year = getCurYear();
+  const week = state.weekIdx;
   // 每月只触发一次
-  if (state.lastRandomEventMonth === month && getCurYear() === state._lastRandomEventYear) return false;
-  // 月中（13-18日）触发
-  if (day < 13 || day > 18) return false;
-  // 30%概率触发
-  if (Math.random() > 0.3) return false;
+  if (state.lastRandomEventMonth === month && year === state._lastRandomEventYear) return false;
+  // 月中（第 2-3 周）触发
+  if (week < 1 || week > 2) return false;
+  // 基础 30% + 设备加成
+  const prob = 0.3 + deviceEventBonus() / 100;
+  if (Math.random() > prob) return false;
   // 随机选一个满足条件的事件
-  const valid = RANDOM_EVENTS.filter(e => e.condition() && day >= e.minDay && day <= e.maxDay);
+  const valid = RANDOM_EVENTS.filter(e => e.condition() && week >= e.minWeek && week <= e.maxWeek);
   if (!valid.length) return false;
   const ev = valid[Math.floor(Math.random()*valid.length)];
   state.lastRandomEventMonth = month;
-  state._lastRandomEventYear = getCurYear();
+  state._lastRandomEventYear = year;
   triggerRandomEventScene(ev);
   return true;
 }
@@ -2717,7 +3429,10 @@ function triggerRandomEventScene(ev) {
     if (ev.id === "netbar_invite" && c.hobby && c.hobby.includes("lol")) candidates.push(id);
     if (ev.id === "football_invite" && c.hobby && c.hobby.includes("足球")) candidates.push(id);
     if (ev.id === "basketball_invite") candidates.push(id);
-    if (ev.id === "phone_borrow" && c.hobby && c.hobby.includes("lol")) candidates.push(id);
+    // 借手机：任何同学都可能来借（不限LOL爱好）
+    if (ev.id === "phone_borrow" && c.gender === "male" && id !== "father" && id !== "chen_teacher" && id !== "liu_teacher") candidates.push(id);
+    // 借杂志：任何同学都可能来借
+    if (ev.id === "magazine_borrow" && c.gender === "male" && id !== "father" && id !== "chen_teacher" && id !== "liu_teacher") candidates.push(id);
   });
   if (candidates.length) inviter = candidates[Math.floor(Math.random()*candidates.length)];
   const inviterName = inviter ? CHARACTERS[inviter].name : "同学";
@@ -2745,6 +3460,19 @@ function triggerRandomEventScene(ev) {
     lines.push({ type:"choice", prompt:"怎么回应？", options:[
       { id:"lend", text:"借你玩会儿", effects:{ [inviter+"_affection"]:5, lol_skill:1, stress:-1 } },
       { id:"refuse", text:"我自己还要用", effects:{ [inviter+"_affection"]:-2 } },
+    ] });
+  } else if (ev.id === "magazine_borrow") {
+    // 选一本玩家拥有的杂志
+    const d = state.devices || {};
+    const pool = [];
+    if (d.magazine) pool.push("《读者》");
+    if (d.football_mag) pool.push("《足球周刊》");
+    if (d.esports_mag) pool.push("《电子竞技》");
+    const book = pool.length ? pool[Math.floor(Math.random()*pool.length)] : "杂志";
+    lines.push({ speaker: inviterName, text: `你那本${book}借我看看呗？` });
+    lines.push({ type:"choice", prompt:"怎么回应？", options:[
+      { id:"lend", text:"借你看吧", effects:{ [inviter+"_affection"]:4, eq:1, stress:-1 } },
+      { id:"refuse", text:"我正看着呢", effects:{ [inviter+"_affection"]:-1 } },
     ] });
   }
   playRandomEventScene(lines);
@@ -2805,48 +3533,125 @@ function playRandomEventScene(lines) {
 }
 
 /* ============================================================
- *  月末考试改造：月末触发月考，期中/期末对应月份，高三每周一模拟考
+ *  假期事件系统（按月/周推进）
+ *  - halfday:    每周一次的周六半天假（短场景）
+ *  - miniMonth:  每月一次的小月假（第 2 周触发，短场景）
+ *  - monthLeave: 月考后的月假（场景，结束后切下月）
+ *  - winter/summer: 1/7 月整月假期（多周自由行动）
  * ============================================================ */
-function tryTriggerExam() {
+const HOLIDAY_EVENTS = {
+  halfday:    { name:"周六半天假",   weeks:1, actionsPerWeek:2, hint:"📅 周六半天假，可以出去透透气或回家歇会儿。" },
+  miniMonth:  { name:"小月假",       weeks:1, actionsPerWeek:4, hint:"📅 月中小月假，半天没课，可以回家一趟。" },
+  monthLeave: { name:"月假",         weeks:1, actionsPerWeek:6, hint:"📅 月考结束放月假两天，回家歇歇。" },
+  winter:     { name:"寒假",         weeks:4, actionsPerWeek:6, hint:"❄️ 寒假开始了，好好休整。" },
+  summer:     { name:"暑假",         weeks:4, actionsPerWeek:6, hint:"☀️ 暑假开始了，尽情放松。" },
+};
+
+/* 每周一次的半天假：在周内第一次行动后触发（30% 概率，避免过频） */
+function tryTriggerHalfdayEvent() {
   if (state.phase !== "freeAction") return false;
+  if (state.inHoliday) return false;
   if (!state.flags.prologueComplete) return false;
-  if (state.flags.ch4Complete) return false; // 高考后不再月考
-  const month = getCurMonth();
-  const year = getCurYear();
-  const day = getCurDayOfMonth();
-  const isHigh3 = state.chapter >= 4 || (year === 2015 && month >= 3);
-
-  // 高三（2015.03起）：每周一模拟考（每周的第1天=周一，简化为每7天触发）
-  if (isHigh3) {
-    // 用 day 差计算周数
-    const start = new Date(2013, 8, 1);
-    const cur = new Date(start);
-    cur.setDate(start.getDate() + state.day - 1);
-    const dayOfWeek = cur.getDay(); // 0=周日
-    // 每周一（dayOfWeek===1）触发模拟考
-    if (dayOfWeek === 1 && day !== state.lastMockWeek) {
-      state.lastMockWeek = day;
-      state.lastExamMonth = month;
-      triggerExamScene("高三模拟考");
-      return true;
-    }
-    return false;
-  }
-
-  // 非高三：月末（每月最后一天）触发月考/期中/期末
-  const lastDayOfMonth = new Date(year, month, 0).getDate();
-  if (day !== lastDayOfMonth) return false;
-  if (state.lastExamMonth === month && state._lastExamYear === year) return false;
-  state.lastExamMonth = month;
-  state._lastExamYear = year;
-
-  let examType = "月考";
-  // 期中：11月、4月
-  if (month === 11 || month === 4) examType = "期中考试";
-  // 期末：1月、6月
-  else if (month === 1 || month === 6) examType = "期末考";
-  triggerExamScene(examType);
+  if (state.flags.ch4Complete) return false;
+  const weekKey = `${state.year}-${state.month}-w${state.weekIdx}`;
+  if (state._halfdayWeekKey === weekKey) return false;
+  if (Math.random() > 0.3) return false;
+  state._halfdayWeekKey = weekKey;
+  playHolidayEvent("halfday", null);
   return true;
+}
+
+/* 每月一次的小月假：第 2 周触发 */
+function tryTriggerMiniMonthLeave() {
+  if (state.phase !== "freeAction") return false;
+  if (state.inHoliday) return false;
+  if (!state.flags.prologueComplete) return false;
+  if (state.flags.ch4Complete) return false;
+  const ym = `${state.year}-${String(state.month).padStart(2,"0")}`;
+  if (state.lastMiniMonthYM === ym) return false;
+  state.lastMiniMonthYM = ym;
+  playHolidayEvent("miniMonth", null);
+  return true;
+}
+
+/* 月考后的月假：场景结束后调用 onDone（切下月） */
+function triggerMonthLeaveHoliday(onDone) {
+  if (state.flags.ch4Complete) { if (onDone) onDone(); return; }
+  playHolidayEvent("monthLeave", onDone);
+}
+
+/* 进入 1/7 月时切换为整月假期 */
+function maybeStartWinterSummer() {
+  if (state.month === 1) {
+    state.inHoliday = "winter";
+    state.holidayWeeksLeft = HOLIDAY_EVENTS.winter.weeks;
+    state.holidayActionsLeft = HOLIDAY_EVENTS.winter.actionsPerWeek;
+    enterHolidayFreeAction("❄️ 寒假开始了，好好休整。");
+  } else if (state.month === 7) {
+    state.inHoliday = "summer";
+    state.holidayWeeksLeft = HOLIDAY_EVENTS.summer.weeks;
+    state.holidayActionsLeft = HOLIDAY_EVENTS.summer.actionsPerWeek;
+    enterHolidayFreeAction("☀️ 暑假开始了，尽情放松。");
+  }
+}
+
+/* 进入假期自由行动（所有行动可用，含打LOL） */
+function enterHolidayFreeAction(hint) {
+  state.phase = "freeAction";
+  syncDerivedDay();
+  setBackground("bedroom_night", "假期");
+  document.getElementById("dialogue-area").innerHTML = `<div class="narration">▸ ${hint}</div>`;
+  document.getElementById("choice-area").innerHTML = "";
+  renderTopbar(); renderAttrs(); renderChars();
+  renderActionBar();
+}
+
+/* 假期推进一周（或半天/月假结束） */
+function advanceHolidayWeek() {
+  const type = state.inHoliday;
+  state.holidayWeeksLeft--;
+  if (state.holidayWeeksLeft <= 0) {
+    // 假期结束
+    state.inHoliday = null;
+    const cb = state._holidayOnDone;
+    state._holidayOnDone = null;
+    // 寒暑假：进入下月
+    if (type === "winter" || type === "summer") {
+      state.month++;
+      if (state.month > 12) { state.month = 1; state.year++; }
+      state.weekIdx = 0; state.weekActionsLeft = 4; state.monthlyActionsDone = 0;
+      grantMonthlyAllowance();
+      syncDerivedDay();
+      renderTopbar(); renderAttrs();
+      if (checkChapterTrigger()) return;
+      if (tryTriggerChapterNode()) return;
+      if (!state.flags.ch4Complete) showMonthlyPlanPanel();
+      else postActionFlavor();
+      return;
+    }
+    // monthLeave：onDone 切月逻辑
+    if (cb) { cb(); return; }
+    // halfday/miniMonth：回到本周剩余自由行动
+    state.phase = "freeAction";
+    syncDerivedDay();
+    setBackground(state.dorm === "day_student" ? "bedroom_night" : "classroom", "自由时段");
+    renderTopbar(); renderAttrs(); renderChars();
+    renderActionBar();
+    document.getElementById("dialogue-area").innerHTML = `<div class="narration">▸ 假期结束，回到日常。</div>`;
+    return;
+  }
+  state.holidayActionsLeft = HOLIDAY_EVENTS[type].actionsPerWeek;
+  postActionFlavor();
+}
+
+/* 进入多行动假期：所有 HOLIDAY_ACTIONS 可用，行动数耗尽则调用 advanceHolidayWeek */
+function playHolidayEvent(type, onDone) {
+  const def = HOLIDAY_EVENTS[type];
+  state.inHoliday = type;
+  state.holidayWeeksLeft = def.weeks || 1;
+  state.holidayActionsLeft = def.actionsPerWeek || 3;
+  state._holidayOnDone = onDone || null;
+  enterHolidayFreeAction(def.hint || `${def.name}，可以自由安排。`);
 }
 
 /* ============================================================
@@ -3147,7 +3952,7 @@ function playStorylineScene(sl) {
       da.appendChild(row);
       da.scrollTop = da.scrollHeight;
     } else if (line.type === "character") {
-      addDialogue(line.char, line.text);
+      addSpeech(line.char, line.text);
       idx++;
       const row = document.createElement("div");
       row.className = "choice-row";
@@ -3186,78 +3991,98 @@ function playStorylineScene(sl) {
 }
 
 
+/* 章节按月份触发：到达指定年月自动进入对应章节 */
 function checkChapterTrigger() {
-  // 序章完成 → 第一章日常（开学次日触发）
-  if (state.flags.prologueComplete && !state.flags.ch1Complete) {
-    if (state.day >= 2 && state.slot === 0) {
-      jumpGameDate(2013, 9, 2);
-      state.chapter = 1;
-      state.phase = "scene";
-      hideActionBar();
-      playScene("ch1_01");
-      return true;
-    }
+  const ym = `${state.year}-${String(state.month).padStart(2,"0")}`;
+  // 序章完成 → 第一章日常（2013.09，开学即触发）
+  if (state.flags.prologueComplete && !state.flags.ch1Complete && !state.flags.ch1Started) {
+    state.flags.ch1Started = true;
+    enterChapter(1);
+    return true;
   }
-  // 第一章完成 → 第二章世界杯（2014.06.12）
-  if (state.flags.ch1Complete && !state.flags.ch2Complete) {
-    // 玩家自由行动若干时段后触发（章节推进时日期自动跳到2014.06）
-    if (state.day >= 5) {
-      jumpGameDate(2014, 6, 12);
-      state.chapter = 2;
-      state.phase = "scene";
-      hideActionBar();
-      playScene("ch2_01");
-      return true;
-    }
+  // 第一章完成后 → 秋季运动会（2013.11）
+  if (state.flags.ch1Complete && !state.flags.sportsMeetPlayed && !state.inHoliday && ym >= "2013-11") {
+    state.flags.sportsMeetPlayed = true;
+    state.phase = "scene";
+    hideActionBar();
+    playScene("sports_meet");
+    return true;
   }
-  // 第二章完成 → 第三章S4（2014.09.18）
-  if (state.flags.ch2Complete && !state.flags.ch3Complete) {
-    if (state.day >= 8) {
-      jumpGameDate(2014, 9, 18);
-      state.chapter = 3;
-      state.phase = "scene";
-      hideActionBar();
-      playScene("ch3_01");
-      return true;
-    }
+  // 第一章完成 → 第二章世界杯（2014.06）
+  if (state.flags.ch1Complete && !state.flags.ch2Complete && !state.flags.ch2Started && ym >= "2014-06") {
+    state.flags.ch2Started = true;
+    enterChapter(2);
+    return true;
   }
-  // 第三章完成 → 终章高三百日冲刺（2015.03.01）
-  if (state.flags.ch3Complete && !state.flags.ch4Complete) {
-    if (state.day >= 11) {
-      jumpGameDate(2015, 3, 1);
-      state.chapter = 4;
-      state.phase = "scene";
-      hideActionBar();
-      playScene("ch4_01");
-      return true;
-    }
+  // 第二章完成 → 第三章S4（2014.09）
+  if (state.flags.ch2Complete && !state.flags.ch3Complete && !state.flags.ch3Started && ym >= "2014-09") {
+    state.flags.ch3Started = true;
+    enterChapter(3);
+    return true;
+  }
+  // 第三章完成 → 终章高三百日冲刺（2015.03）
+  if (state.flags.ch3Complete && !state.flags.ch4Started && ym >= "2015-03") {
+    state.flags.ch4Started = true;
+    enterChapter(4);
+    return true;
   }
   return false;
 }
 
+/* 进入章节 n：跳转到该章节起始年月；高三(n=4)由节点系统推进 */
+function enterChapter(n) {
+  const d = CHAPTER_START_YM[n];
+  state.year = d.y;
+  state.month = d.m;
+  state.weekIdx = 0;
+  state.weekActionsLeft = 4;
+  state.monthlyActionsDone = 0;
+  state.inHoliday = null;
+  state.holidayActionsLeft = 0;
+  state.chapter = n;
+  syncDerivedDay();
+  renderTopbar();
+  if (n === 4) {
+    // 高三：由节点系统推进，立即触发首个节点（百日誓师 ch4_01）
+    if (tryTriggerChapterNode()) return;
+  }
+  state.phase = "scene";
+  hideActionBar();
+  playScene(`ch${n}_01`);
+}
+
+/* 高三节点式推进：百日誓师→二模→三模→高考，每节点间 1 次自由行动 */
+const GAOKAO_NODES = [
+  { id:"pledge", ym:"2015-03", name:"百日誓师", scene:"ch4_01" },
+  { id:"mock2",  ym:"2015-04", name:"二模",     scene:"ch4_mock2" },
+  { id:"mock3",  ym:"2015-05", name:"三模",     scene:"ch4_mock3" },
+  { id:"gaokao", ym:"2015-06", name:"高考",     scene:"ch4_02" },
+];
+
+function tryTriggerChapterNode() {
+  if (!state.flags.ch4Started) return false;
+  if (state.flags.ch4Complete) return false;
+  const ym = `${state.year}-${String(state.month).padStart(2,"0")}`;
+  const node = GAOKAO_NODES.find(n => !state.playedStorylines[`node_${n.id}`] && ym >= n.ym);
+  if (!node) return false;
+  state.playedStorylines[`node_${node.id}`] = true;
+  state.chapterNode = node.id;
+  state.phase = "scene";
+  hideActionBar();
+  if (node.id === "gaokao") {
+    state.flags.ch4Complete = true;
+    state.chapter = 5;
+  }
+  renderTopbar();
+  playScene(node.scene);
+  // 节点间只给 1 次自由行动
+  state.weekActionsLeft = 1;
+  return true;
+}
+
+/* ch4_01（百日誓师）场景结束后：进入 1 次自由行动（学习冲刺） */
 function enterFinalPrepAfterCh4_01() {
-  // 跳到高考前几天（2015.06.04，距高考6月7日还有3天）
-  jumpGameDate(2015, 6, 4);
-  // 高考前最后一波自由行动
   enterFinalPrep();
-  // 监听：再过3天触发高考
-  state._finalPrepStart = state.day;
-}
-
-/* ---------- 高考触发 ---------- */
-function maybeTriggerGaokao() {
-  if (state.flags.ch3Complete && !state.flags.ch4Complete) {
-    if (state._finalPrepStart && state.day - state._finalPrepStart >= 3) {
-      state.phase = "scene";
-      hideActionBar();
-      state.flags.ch4Complete = true;
-      state.chapter = 5;
-      renderTopbar();
-      playScene("ch4_02");
-      return true;
-    }
-  }
-  return false;
 }
 
 /* ---------- 结局计算 ---------- */
@@ -3302,6 +4127,17 @@ function getExtraEndings(score) {
     extras.push("你和曹卓尔考上了同一座城市的大学。你们的故事，才刚刚开始。");
   if ((state.affections.yangling||0) >= 80 && score.total >= 500)
     extras.push("你和杨玲考上了长沙的大学。周末的五一广场，经常能看到你们。");
+  // 情侣结局：正式确立关系的目标
+  if (state.couples) {
+    Object.keys(state.couples).forEach(cid => {
+      const cn = CHARACTERS[cid]?.name;
+      if (!cn) return;
+      if (score.total >= 550)
+        extras.push(`💕 你和 ${cn} 在高考后正式公开了恋情，约定去同一座城市读大学。`);
+      else
+        extras.push(`💕 你和 ${cn} 的恋情在毕业季画上了句号——也许只是暂别。`);
+    });
+  }
   // 兄弟结局
   const maleAffs = ["kuangruifeng","liuwangjing","chenhao","liugangpeng","husiren","fengzihao"].map(id => state.affections[id]||0);
   if (maleAffs.every(v => v >= 40))
