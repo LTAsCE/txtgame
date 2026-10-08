@@ -1,0 +1,2594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>青春纪事·423</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg-deep: #050a07;
+    --bg-mid: #0a1410;
+    --bg-card: rgba(10, 26, 18, 0.85);
+    --green-bright: #00ff88;
+    --green-mid: #00cc66;
+    --green-dim: #006633;
+    --green-glow: rgba(0, 255, 136, 0.4);
+    --text-main: #c8ffd9;
+    --text-dim: #5a9970;
+    --text-bright: #ffffff;
+    --warn: #ffaa00;
+    --danger: #ff4466;
+    --border: rgba(0, 255, 136, 0.25);
+  }
+  html, body {
+    height: 100%;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    color: var(--text-main);
+    background: var(--bg-deep);
+    overflow: hidden;
+    user-select: none;
+  }
+  body {
+    background:
+      radial-gradient(circle at 20% 10%, rgba(0, 80, 40, 0.25), transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(0, 100, 50, 0.2), transparent 40%),
+      linear-gradient(135deg, #050a07 0%, #0a1410 50%, #050a07 100%);
+    background-attachment: fixed;
+  }
+  /* ============ 启动屏 ============ */
+  #start-screen {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 100;
+    text-align: center;
+  }
+  #start-screen::before {
+    content: ""; position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(0,255,136,0.025) 2px, rgba(0,255,136,0.025) 4px),
+      radial-gradient(ellipse at center, rgba(0,40,20,0.6), rgba(0,0,0,0.95));
+    z-index: -1;
+  }
+  .game-title {
+    font-size: 72px;
+    font-weight: 900;
+    letter-spacing: 8px;
+    color: var(--green-bright);
+    text-shadow: 0 0 20px var(--green-glow), 0 0 40px var(--green-glow);
+    margin-bottom: 8px;
+    animation: titlePulse 3s ease-in-out infinite;
+  }
+  @keyframes titlePulse {
+    0%,100% { text-shadow: 0 0 20px var(--green-glow), 0 0 40px var(--green-glow); }
+    50% { text-shadow: 0 0 30px var(--green-bright), 0 0 60px var(--green-glow); }
+  }
+  .game-subtitle {
+    font-size: 18px; letter-spacing: 6px;
+    color: var(--text-dim);
+    margin-bottom: 60px;
+  }
+  .start-btn {
+    padding: 14px 48px;
+    font-size: 18px; letter-spacing: 4px;
+    color: var(--green-bright);
+    background: transparent;
+    border: 1.5px solid var(--green-mid);
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: inherit;
+  }
+  .start-btn:hover {
+    background: rgba(0,255,136,0.15);
+    box-shadow: 0 0 20px var(--green-glow);
+    transform: translateY(-2px);
+  }
+  .start-info {
+    margin-top: 40px;
+    font-size: 12px; color: var(--text-dim);
+    line-height: 1.8;
+  }
+
+  /* ============ 游戏主屏 ============ */
+  #game-screen {
+    display: none;
+    height: 100vh;
+    flex-direction: column;
+    padding: 8px;
+    gap: 8px;
+  }
+  #game-screen.active { display: flex; }
+
+  .topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(6px);
+  }
+  .topbar .logo {
+    font-weight: 900; color: var(--green-bright);
+    letter-spacing: 2px; font-size: 14px;
+    padding-right: 12px; border-right: 1px solid var(--border);
+  }
+  .topbar .info-pill {
+    font-size: 12px; color: var(--text-main);
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    background: rgba(0,40,20,0.4);
+  }
+  .topbar .info-pill b { color: var(--green-bright); }
+  .topbar .spacer { flex: 1; }
+  .topbar .countdown {
+    font-size: 13px; color: var(--warn);
+    letter-spacing: 1px;
+  }
+
+  .main-area {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 220px 1fr 220px;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  /* 侧栏：属性面板 */
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(6px);
+    overflow-y: auto;
+    padding: 10px;
+  }
+  .panel h3 {
+    font-size: 12px; letter-spacing: 3px;
+    color: var(--green-mid);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px; margin-bottom: 8px;
+  }
+  .attr-row {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; margin-bottom: 4px;
+  }
+  .attr-row .name { width: 78px; color: var(--text-dim); white-space: nowrap; }
+  .attr-row .bar {
+    flex: 1; height: 8px;
+    background: rgba(0,40,20,0.6);
+    border: 1px solid rgba(0,255,136,0.2);
+    position: relative;
+  }
+  .attr-row .fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-dim), var(--green-bright));
+    transition: width 0.5s ease;
+  }
+  .attr-row .val {
+    width: 28px; text-align: right;
+    color: var(--green-bright);
+    font-size: 11px; font-weight: bold;
+  }
+  .attr-row.money .fill { background: linear-gradient(90deg, #665500, #ffaa00); }
+  .attr-row.money .val { color: var(--warn); }
+  .attr-row.stress .fill { background: linear-gradient(90deg, #661a00, #ff4466); }
+  .attr-row.stress .val { color: var(--danger); }
+  .attr-section { margin-bottom: 12px; }
+  .attr-section-title {
+    font-size: 10px; color: var(--text-dim);
+    letter-spacing: 2px; margin-bottom: 4px;
+  }
+
+  /* 中间内容区 */
+  .scene-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(6px);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .scene-bg {
+    height: 38%;
+    min-height: 120px;
+    background-size: cover; background-position: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    display: flex; align-items: flex-end;
+    padding: 12px;
+  }
+  .scene-bg::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(5,10,7,0.95), transparent 70%);
+  }
+  .scene-bg .scene-title {
+    position: relative; z-index: 1;
+    font-size: 14px; color: var(--green-bright);
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px rgba(0,0,0,0.8);
+  }
+  .scene-bg .chapter-badge {
+    position: absolute; top: 10px; right: 12px; z-index: 1;
+    font-size: 11px; color: var(--green-mid);
+    border: 1px solid var(--border);
+    padding: 2px 8px; background: rgba(0,20,10,0.7);
+    letter-spacing: 2px;
+  }
+  .dialogue-area {
+    flex: 1;
+    padding: 16px 20px;
+    overflow-y: auto;
+    font-size: 14px; line-height: 1.8;
+  }
+  .narration {
+    color: var(--text-main);
+    margin-bottom: 10px;
+    font-style: italic;
+    opacity: 0.92;
+  }
+  .speech {
+    margin-bottom: 10px;
+    padding-left: 12px;
+    border-left: 2px solid var(--green-mid);
+  }
+  .speech .speaker {
+    font-size: 12px; color: var(--green-bright);
+    margin-bottom: 2px; letter-spacing: 1px;
+  }
+  .speech .text { color: var(--text-main); }
+  .speech.teacher { border-color: var(--warn); }
+  .speech.teacher .speaker { color: var(--warn); }
+  .speech.female { border-color: #ff6699; }
+  .speech.female .speaker { color: #ff99bb; }
+
+  .choice-area {
+    padding: 12px 20px 16px;
+    border-top: 1px solid var(--border);
+    background: rgba(0,20,10,0.4);
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .choice-area .group-label {
+    font-size: 10px; color: var(--text-dim);
+    letter-spacing: 2px; margin: 6px 0 2px;
+    border-bottom: 1px dashed rgba(0,255,136,0.15);
+    padding-bottom: 2px;
+  }
+  .choice-area .char-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .choice-area .char-grid .choice-btn {
+    margin-bottom: 0;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .choice-prompt {
+    font-size: 13px; color: var(--green-bright);
+    margin-bottom: 10px; letter-spacing: 1px;
+  }
+  .choice-btn {
+    display: block; width: 100%;
+    text-align: left;
+    padding: 10px 14px; margin-bottom: 6px;
+    font-size: 13px;
+    color: var(--text-main);
+    background: rgba(0,40,20,0.5);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .choice-btn:hover:not(:disabled) {
+    background: rgba(0,255,136,0.12);
+    border-color: var(--green-mid);
+    color: var(--green-bright);
+    transform: translateX(4px);
+  }
+  .choice-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .choice-btn .eff {
+    font-size: 10px; color: var(--text-dim);
+    margin-left: 8px;
+  }
+  .choice-btn .eff .plus { color: var(--green-bright); }
+  .choice-btn .eff .minus { color: var(--danger); }
+
+  /* 行动按钮区 */
+  .action-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 6px;
+    padding: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .action-bar .action-group-label {
+    grid-column: 1 / -1;
+    font-size: 10px; color: var(--green-mid);
+    letter-spacing: 2px;
+    margin: 4px 0 2px;
+    padding-bottom: 2px;
+    border-bottom: 1px dashed rgba(0,255,136,0.15);
+  }
+  .action-btn {
+    padding: 10px 8px;
+    font-size: 12px;
+    color: var(--text-main);
+    background: rgba(0,30,15,0.6);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    text-align: center;
+  }
+  .action-btn:hover:not(:disabled) {
+    background: rgba(0,255,136,0.12);
+    border-color: var(--green-mid);
+    color: var(--green-bright);
+    box-shadow: 0 0 12px var(--green-glow);
+  }
+  .action-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .action-btn .act-name { font-weight: bold; font-size: 13px; }
+  .action-btn .act-eff { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+  /* 右侧：好感度/角色 */
+  .char-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; padding: 3px 4px;
+    border-bottom: 1px dashed rgba(0,255,136,0.08);
+  }
+  .char-row .char-name { color: var(--text-main); }
+  .char-row .char-aff { color: var(--green-bright); font-weight: bold; }
+  .char-row.female .char-name { color: #ff99bb; }
+  .char-row.female .char-aff { color: #ff6699; }
+  .char-row.me-row {
+    background: rgba(0,255,136,0.12);
+    border: 1px solid var(--green-mid);
+    padding: 4px 6px;
+    margin-bottom: 6px;
+  }
+  .char-row.me-row .char-name { color: var(--green-bright); font-weight: bold; }
+  .char-row.me-row .char-aff { color: var(--warn); font-size: 9px; }
+  .char-group-title {
+    font-size: 10px; color: var(--green-mid);
+    letter-spacing: 2px;
+    margin: 8px 0 2px;
+    padding-bottom: 2px;
+    border-bottom: 1px solid var(--border);
+  }
+  .char-row .char-role {
+    font-size: 9px; color: var(--warn);
+    margin-left: 4px;
+  }
+  .panel { font-size: 11px; }
+
+  /* ============ 结局屏 ============ */
+  #end-screen {
+    display: none;
+    position: fixed; inset: 0;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px;
+    z-index: 90;
+    text-align: center;
+    overflow-y: auto;
+  }
+  #end-screen.active { display: flex; }
+  .ending-title {
+    font-size: 48px; font-weight: 900;
+    letter-spacing: 8px;
+    color: var(--green-bright);
+    text-shadow: 0 0 30px var(--green-glow);
+    margin-bottom: 16px;
+  }
+  .ending-tier {
+    font-size: 16px; color: var(--warn);
+    letter-spacing: 4px; margin-bottom: 24px;
+  }
+  .ending-text {
+    max-width: 640px;
+    font-size: 15px; line-height: 2;
+    color: var(--text-main);
+    margin-bottom: 24px;
+    padding: 20px 30px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+  }
+  .ending-stats {
+    display: flex; gap: 20px;
+    margin-bottom: 30px;
+    font-size: 12px; color: var(--text-dim);
+  }
+  .ending-stats span b { color: var(--green-bright); font-size: 16px; }
+  .ending-extras {
+    max-width: 640px; width: 100%;
+    margin-bottom: 30px;
+    text-align: left;
+    font-size: 13px; line-height: 1.9;
+    color: var(--text-main);
+  }
+  .ending-extras .extra-line {
+    padding: 6px 10px; margin-bottom: 4px;
+    border-left: 2px solid var(--green-mid);
+    background: rgba(0,30,15,0.4);
+  }
+  .restart-btn {
+    padding: 12px 40px;
+    font-size: 14px; letter-spacing: 4px;
+    color: var(--green-bright);
+    background: transparent;
+    border: 1.5px solid var(--green-mid);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .restart-btn:hover {
+    background: rgba(0,255,136,0.15);
+    box-shadow: 0 0 20px var(--green-glow);
+  }
+
+  /* 滚动条 */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: rgba(0,20,10,0.4); }
+  ::-webkit-scrollbar-thumb { background: var(--green-dim); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--green-mid); }
+
+  /* Toast */
+  #toast {
+    position: fixed; top: 60px; left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 24px;
+    background: rgba(5,15,10,0.95);
+    border: 1px solid var(--green-mid);
+    color: var(--green-bright);
+    font-size: 13px;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; }
+  #toast .delta { display: inline-block; margin: 0 6px; font-size: 11px; }
+  #toast .delta.pos { color: var(--green-bright); }
+  #toast .delta.neg { color: var(--danger); }
+
+  /* 属性变更飘字 */
+  .float-delta {
+    position: absolute; pointer-events: none;
+    font-size: 12px; font-weight: bold;
+    animation: floatUp 1.5s ease-out forwards;
+    z-index: 50;
+  }
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-30px); }
+  }
+  .float-delta.pos { color: var(--green-bright); text-shadow: 0 0 8px var(--green-glow); }
+  .float-delta.neg { color: var(--danger); text-shadow: 0 0 8px rgba(255,68,102,0.6); }
+
+  @media (max-width: 900px) {
+    .main-area { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
+    .panel { max-height: 130px; padding: 8px; }
+    .panel h3 { font-size: 11px; margin-bottom: 4px; }
+    .attr-row { font-size: 10px; margin-bottom: 3px; }
+    .attr-row .name { width: 64px; font-size: 10px; }
+    .attr-row .val { width: 24px; font-size: 10px; }
+    .char-row { font-size: 10px; padding: 2px 4px; }
+    .game-title { font-size: 40px; letter-spacing: 4px; }
+    /* 顶栏自适应 */
+    .topbar { flex-wrap: wrap; padding: 6px 8px; gap: 6px; }
+    .topbar .logo { font-size: 12px; padding-right: 8px; }
+    .topbar .info-pill { font-size: 10px; padding: 2px 6px; }
+    .topbar .countdown { font-size: 11px; width: 100%; text-align: right; }
+    /* 场景区域 */
+    .scene-bg { height: 80px; min-height: 80px; padding: 8px; }
+    .scene-bg .scene-title { font-size: 13px; letter-spacing: 2px; }
+    .scene-bg .chapter-badge { font-size: 10px; padding: 1px 6px; }
+    .dialogue-area { padding: 10px 12px; font-size: 13px; line-height: 1.6; }
+    .choice-area { padding: 8px 12px 12px; max-height: 200px; }
+    .choice-prompt { font-size: 12px; margin-bottom: 6px; }
+    .choice-btn { padding: 8px 10px; font-size: 12px; margin-bottom: 4px; }
+    .choice-area .char-grid { grid-template-columns: 1fr; }
+    /* 行动按钮栏 */
+    .action-bar { padding: 6px; gap: 4px; }
+    .action-group-label { font-size: 9px; letter-spacing: 1px; margin: 4px 0 2px; }
+    .action-btn { font-size: 12px; padding: 6px 8px; min-width: 0; }
+    .action-btn .act-name { font-size: 12px; }
+    .action-btn .act-eff { font-size: 9px; }
+    /* 结局屏 */
+    .ending-title { font-size: 30px; letter-spacing: 4px; }
+    .ending-tier { font-size: 13px; letter-spacing: 2px; }
+    .ending-text { font-size: 13px; padding: 14px 18px; max-width: 100%; }
+    .ending-stats { flex-wrap: wrap; gap: 10px; font-size: 11px; }
+    .ending-extras { font-size: 12px; }
+  }
+
+  @media (max-width: 480px) {
+    /* 极小屏（手机）进一步压缩 */
+    .game-title { font-size: 30px; letter-spacing: 2px; }
+    .game-subtitle { font-size: 11px; }
+    .start-btn { padding: 10px 30px; font-size: 14px; letter-spacing: 4px; }
+    .start-info { font-size: 11px; }
+    .topbar .logo { font-size: 10px; padding-right: 6px; letter-spacing: 1px; }
+    .topbar .info-pill { font-size: 9px; padding: 2px 4px; }
+    .topbar .countdown { font-size: 10px; }
+    .panel { max-height: 110px; padding: 6px; }
+    .panel h3 { font-size: 10px; letter-spacing: 2px; }
+    .attr-section-title { font-size: 9px; letter-spacing: 1px; }
+    .attr-row { font-size: 9px; }
+    .attr-row .name { width: 56px; }
+    .attr-row .bar { height: 6px; }
+    .attr-row .val { width: 20px; font-size: 9px; }
+    .char-group-title { font-size: 9px; letter-spacing: 1px; }
+    .char-row { font-size: 9px; padding: 2px 3px; }
+    .char-row .char-role { font-size: 8px; }
+    .scene-bg { height: 70px; min-height: 70px; padding: 6px; }
+    .scene-bg .scene-title { font-size: 11px; letter-spacing: 1px; }
+    .scene-bg .chapter-badge { font-size: 9px; padding: 1px 4px; }
+    .dialogue-area { padding: 8px 10px; font-size: 12px; line-height: 1.5; }
+    .narration { margin-bottom: 6px; font-size: 11px; }
+    .speech { padding-left: 8px; margin-bottom: 6px; }
+    .speech .speaker { font-size: 10px; }
+    .speech .text { font-size: 12px; }
+    .choice-area { padding: 6px 10px 10px; max-height: 180px; }
+    .choice-prompt { font-size: 11px; margin-bottom: 4px; }
+    .choice-btn { padding: 6px 8px; font-size: 11px; margin-bottom: 3px; }
+    .action-bar { padding: 4px; gap: 3px; }
+    .action-group-label { font-size: 8px; margin: 3px 0 1px; }
+    .action-btn { font-size: 11px; padding: 5px 6px; }
+    .action-btn .act-name { font-size: 11px; }
+    .action-btn .act-eff { font-size: 8px; }
+    .ending-title { font-size: 22px; letter-spacing: 2px; }
+    .ending-tier { font-size: 11px; }
+    .ending-text { font-size: 12px; padding: 10px 12px; line-height: 1.7; }
+    .ending-stats span b { font-size: 13px; }
+    .ending-extras { font-size: 11px; }
+    .restart-btn { padding: 10px 24px; font-size: 12px; letter-spacing: 2px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== 启动屏 ========== -->
+<div id="start-screen">
+  <div class="game-title">青春纪事</div>
+  <div class="game-subtitle">423 势力 · 2013—2015</div>
+  <button class="start-btn" id="btn-start">开 始 故 事</button>
+  <div class="start-info">
+    湘潭县一中 · 高二（423班）→ 高考<br>
+    自由选择 / 数值养成 / 好感度 / 多结局<br>
+    主角性别：男（固定）
+  </div>
+</div>
+
+<!-- ========== 游戏主屏 ========== -->
+<div id="game-screen">
+  <div class="topbar">
+    <div class="logo">青春纪事·423</div>
+    <div class="info-pill">日期：<b id="info-date">2013.09.01</b></div>
+    <div class="info-pill">时段：<b id="info-slot">早读</b></div>
+    <div class="info-pill">章节：<b id="info-chapter">序章</b></div>
+    <div class="spacer"></div>
+    <div class="info-pill">宿舍：<b id="info-dorm">—</b></div>
+    <div class="countdown" id="info-countdown">距高考 645 天</div>
+  </div>
+
+  <div class="main-area">
+    <!-- 左：属性面板 -->
+    <div class="panel" id="attr-panel">
+      <h3>属 性</h3>
+      <div id="attr-list"></div>
+    </div>
+
+    <!-- 中：场景/对话/选择 -->
+    <div class="scene-box">
+      <div class="scene-bg" id="scene-bg">
+        <div class="chapter-badge" id="scene-chapter">序章</div>
+        <div class="scene-title" id="scene-title">湘潭县一中</div>
+      </div>
+      <div class="dialogue-area" id="dialogue-area"></div>
+      <div class="choice-area" id="choice-area"></div>
+    </div>
+
+    <!-- 右：角色好感度 -->
+    <div class="panel">
+      <h3>人 物</h3>
+      <div id="char-list"></div>
+    </div>
+  </div>
+
+  <!-- 行动按钮 -->
+  <div class="action-bar" id="action-bar"></div>
+</div>
+
+<!-- ========== 结局屏 ========== -->
+<div id="end-screen">
+  <div class="ending-title" id="ending-title">结局</div>
+  <div class="ending-tier" id="ending-tier"></div>
+  <div class="ending-text" id="ending-text"></div>
+  <div class="ending-stats" id="ending-stats"></div>
+  <div class="ending-extras" id="ending-extras"></div>
+  <button class="restart-btn" id="btn-restart">再 来 一 次</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* =========================================================================
+   青春纪事·423势力 - 单文件实现
+   黑绿色UI · 简化但完整的养成+剧情系统
+   ========================================================================= */
+
+/* ---------- 游戏数据：角色 ---------- */
+const CHARACTERS = {
+  // 男生 - 212
+  fengzihao:   { name:"冯梓豪", gender:"male", dorm:"212", hobby:"足球", ref:"湖南工程学院" },
+  guozonghua:  { name:"郭宗华", gender:"male", dorm:"212", hobby:"-", ref:"陕西科技大学" },
+  hanchang:    { name:"韩昶", gender:"male", dorm:"212", hobby:"-", ref:"来年再战" },
+  hujieyu:     { name:"胡杰宇", gender:"male", dorm:"212", hobby:"-", ref:"河北工程大学" },
+  husiren:     { name:"胡思任", gender:"male", dorm:"212", hobby:"足球", ref:"湖南科技大学" },
+  huangjingxi: { name:"黄靖淅", gender:"male", dorm:"212", hobby:"lol", ref:"湖南工学院" },
+  kuangruifeng:{ name:"旷锐锋", gender:"male", dorm:"212", hobby:"-", ref:"北京邮电大学" },
+  liule:       { name:"刘乐", gender:"male", dorm:"212", hobby:"-", ref:"株洲铁道技术学院" },
+  tansanqi:    { name:"谭三齐", gender:"male", dorm:"212", hobby:"-", ref:"湖南工业大学" },
+  // 213
+  chenhao:     { name:"陈浩", gender:"male", dorm:"213", hobby:"lol", ref:"中国地质大学" },
+  chuliang:    { name:"楚亮", gender:"male", dorm:"213", hobby:"lol", ref:"中国矿业大学" },
+  huangzihua:  { name:"黄子华", gender:"male", dorm:"213", hobby:"lol", ref:"湖南涉外经济学院" },
+  laikefu:     { name:"赖柯甫", gender:"male", dorm:"213", hobby:"lol", ref:"中南林业科技大学" },
+  lefan:       { name:"乐帆", gender:"male", dorm:"213", hobby:"lol", ref:"长春工业大学" },
+  liugangpeng: { name:"刘刚鹏", gender:"male", dorm:"213", hobby:"lol", ref:"北京理工珠海学院" },
+  wangxuanlin: { name:"王选林", gender:"male", dorm:"213", hobby:"lol", ref:"福建工程学院" },
+  wuzifan:     { name:"吴梓凡", gender:"male", dorm:"213", hobby:"-", ref:"新疆大学" },
+  zhangxiapeng:{ name:"章夏鹏", gender:"male", dorm:"213", hobby:"lol", ref:"衡阳师范" },
+  // 214
+  chenletian:  { name:"陈乐天", gender:"male", dorm:"214", hobby:"足球·lol", ref:"武警学院", role:"足球队长" },
+  fuyinhan:    { name:"符银汉", gender:"male", dorm:"214", hobby:"lol", ref:"来年再战" },
+  guoxuan:     { name:"郭萱", gender:"male", dorm:"214", hobby:"lol", ref:"-" },
+  liuyiduo:    { name:"刘一多", gender:"male", dorm:"214", hobby:"lol", ref:"长沙师范大学" },
+  tancongke:   { name:"谭淙珂", gender:"male", dorm:"214", hobby:"lol", ref:"湖南科技大学" },
+  xubowen:     { name:"徐博文", gender:"male", dorm:"214", hobby:"lol", ref:"南京农业大学" },
+  yinyuhao:    { name:"尹宇豪", gender:"male", dorm:"214", hobby:"lol", ref:"兵哥哥" },
+  zhaobo:      { name:"赵博", gender:"male", dorm:"214", hobby:"lol", ref:"来年再战" },
+  zhaochenglin:{ name:"赵城林", gender:"male", dorm:"214", hobby:"-", ref:"第三军医大学" },
+  zhuhongyu:   { name:"朱宏宇", gender:"male", dorm:"214", hobby:"lol", ref:"南京工程学院" },
+  // 走读
+  hebo:        { name:"贺博", gender:"male", dorm:"走读", hobby:"-", ref:"南昌航空大学" },
+  liuwangjing:{ name:"刘望京", gender:"female", dorm:"走读", hobby:"文艺", type:"文艺型", ref:"湖南工程学院" },
+  liushi:      { name:"柳实", gender:"male", dorm:"走读", hobby:"-", ref:"北京理工大学" },
+  pengzhouhao: { name:"彭舟浩", gender:"male", dorm:"走读", hobby:"-", ref:"-" },
+  tangyufeng:  { name:"唐宇枫", gender:"male", dorm:"走读", hobby:"-", ref:"吉林大学" },
+  xielongpeng: { name:"谢泷鹏", gender:"male", dorm:"走读", hobby:"-", ref:"-" },
+  yinyutao:    { name:"尹宇韬", gender:"male", dorm:"走读", hobby:"-", ref:"来年再战" },
+
+  // 女生 - 学习型
+  caozhuoer:   { name:"曹卓尔", gender:"female", type:"学习型", ref:"湖南商学院" },
+  lixinlin:    { name:"李鑫琳", gender:"female", type:"学习型", ref:"湖南商学院" },
+  liutingting:{ name:"刘婷葶", gender:"female", type:"学习型", ref:"湖南文理学院" },
+  yangling:    { name:"杨玲", gender:"female", type:"学习型", ref:"长沙理工大学" },
+  guruimin:    { name:"顾睿敏", gender:"female", type:"学习型", ref:"长沙理工大学" },
+  xiaoya:      { name:"肖娅", gender:"female", type:"学习型", ref:"长沙理工大学" },
+  zhaoyu:      { name:"赵玉", gender:"female", type:"学习型", ref:"湖南财政经济学院" },
+  // 文艺型
+  chenziqi:    { name:"陈子琪", gender:"female", type:"文艺型", ref:"温州大学" },
+  yuqige:      { name:"于绮格", gender:"female", type:"文艺型", ref:"湖南农业大学" },
+  hebiwen:     { name:"贺碧文", gender:"female", type:"文艺型", ref:"华侨大学" },
+  nishun:      { name:"倪顺", gender:"female", type:"文艺型", ref:"杭州师范大学" },
+  zhangyinleyi:{ name:"张尹乐怡", gender:"female", type:"文艺型", ref:"东北农业大学" },
+  // 社交型（精选）
+  huqianyu:    { name:"胡倩瑜", gender:"female", type:"社交型", ref:"湖南涉外经济学院" },
+  jiangyuting: { name:"蒋雨婷", gender:"female", type:"社交型", ref:"湖南文理学院" },
+  liumengyu:   { name:"刘梦雨", gender:"female", type:"社交型", ref:"湖南理工学院" },
+  maoyulin:   { name:"毛钰麟", gender:"female", type:"社交型", ref:"长沙师范大学" },
+  xiefu:       { name:"谢馥", gender:"female", type:"社交型", ref:"湖南医药学院" },
+  chenliuke:   { name:"陈柳柯", gender:"female", type:"社交型", ref:"北华大学" },
+  chenying:    { name:"陈莹", gender:"female", type:"社交型", ref:"太原理工大学" },
+  fangjingyi: { name:"方静仪", gender:"female", type:"社交型", ref:"河南大学" },
+  huangshifeng:{ name:"黄是凤", gender:"female", type:"社交型", ref:"华南师范大学" },
+  yanglingyu:  { name:"杨玲玉", gender:"female", type:"社交型", ref:"南京理工大学" },
+  yanghuairuo: { name:"杨怀若", gender:"female", type:"社交型", ref:"华中农业大学" },
+  zuowenhui:  { name:"左文慧", gender:"female", type:"社交型", ref:"来年再战" },
+};
+
+/* 主要可互动角色（精简，便于显示） */
+const KEY_CHARS = [
+  "caozhuoer","kuangruifeng","liuwangjing","yangling",
+  "chenhao","liugangpeng","husiren","fengzihao",
+  "chenziqi","huqianyu","liumengyu","zhaochenglin"
+];
+
+/* ---------- 宿舍选择 ---------- */
+const DORMS = {
+  dorm_212: {
+    name:"212宿舍", desc:"混合宿舍。有学霸旷锐锋，足球队长陈乐天常来串门。",
+    bonuses:{ intelligence:3, football:3, stress:2 },
+    key_members:["旷锐锋","冯梓豪","胡思任"]
+  },
+  dorm_213: {
+    name:"213宿舍", desc:"LOL核心宿舍。6个人打LOL，周末常去网吧开黑。",
+    bonuses:{ lol_skill:5, stress:-3, intelligence:-2 },
+    key_members:["陈浩","刘刚鹏","楚亮"]
+  },
+  dorm_214: {
+    name:"214宿舍", desc:"混合宿舍。有军校生、复读生、参军生，人员流动大。",
+    bonuses:{ eq:3, stamina:2, stress:1 },
+    key_members:["陈乐天","赵城林","徐博文"]
+  },
+  day_student: {
+    name:"走读", desc:"家住县城，每天回家。有电脑，能熬夜看比赛。",
+    bonuses:{ stamina:5, lol_skill:2, money:50 },
+    key_members:["刘望京","唐宇枫","柳实"]
+  }
+};
+
+/* ---------- 属性定义 ---------- */
+const ATTRS = [
+  { key:"intelligence", name:"🧠 智力", default:30, max:100, group:"📚 学业" },
+  { key:"chinese",      name:"📝 语文", default:30, max:100, group:"📚 学业" },
+  { key:"math",         name:"📐 数学", default:30, max:100, group:"📚 学业" },
+  { key:"english",      name:"🔤 英语", default:30, max:100, group:"📚 学业" },
+  { key:"comprehensive",name:"🔬 理综", default:30, max:100, group:"📚 学业" },
+  { key:"stamina",       name:"💪 体力", default:50, max:100, group:"🏃 身体" },
+  { key:"sports",        name:"🏅 体育", default:20, max:100, group:"🏃 身体" },
+  { key:"football",      name:"⚽ 足球", default:10, max:100, group:"🏃 身体" },
+  { key:"lol_skill",     name:"🎮 LOL", default:10, max:100, group:"🕹️ 娱乐" },
+  { key:"game_knowledge",name:"👁️ 游戏知识", default:10, max:100, group:"🕹️ 娱乐" },
+  { key:"charm",         name:"✨ 魅力", default:20, max:100, group:"👥 社交" },
+  { key:"eq",            name:"💡 情商", default:20, max:100, group:"👥 社交" },
+  { key:"popularity",    name:"⭐ 人气", default:10, max:100, group:"👥 社交" },
+];
+
+/* ---------- 行动池 ---------- */
+/* slots: 0=早读 1=上午 2=下午 3=晚自习 4=深夜 */
+const ACTIONS = [
+  { id:"study",       name:"📚 学习",     eff:{intelligence:3, stress:2, stamina:-2}, slots:[0,1,2,3], companion:true },
+  { id:"study_math",  name:"📐 专攻数学", eff:{math:4, stress:3, stamina:-2}, slots:[0,1,2,3], companion:true },
+  { id:"study_eng",   name:"🔤 专攻英语", eff:{english:4, stress:2, stamina:-2}, slots:[0,1,2,3], companion:true },
+  { id:"study_comp",  name:"🔬 理综训练", eff:{comprehensive:4, stress:3, stamina:-3}, slots:[0,1,2,3], companion:true },
+  { id:"football",    name:"⚽ 踢足球",   eff:{football:4, sports:3, stamina:-4, stress:-2}, tag:"运动", slots:[1,2], companion:true },
+  { id:"basketball",  name:"🏀 打篮球",   eff:{sports:3, stamina:-3, charm:1}, tag:"运动", slots:[1,2], companion:true },
+  { id:"badminton",   name:"🏸 打羽毛球", eff:{sports:3, stamina:-2, charm:1, eq:1}, tag:"运动", slots:[1,2], companion:true },
+  { id:"pingpong",    name:"🏓 打乒乓球", eff:{sports:2, stamina:-2, eq:1, charm:1}, tag:"运动", slots:[1,2], companion:true },
+  { id:"run",         name:"🏃 跑步",     eff:{stamina:5, sports:2, stress:-2}, tag:"运动", slots:[0,1,2,3], companion:true },
+  { id:"lol",         name:"🎮 打LOL",    eff:{lol_skill:4, stress:-3, stamina:-3}, cost:{money:5}, slots:[3,4], companion:true },
+  { id:"read_mag",    name:"📖 看杂志",   eff:{chinese:2, eq:1, stress:-2}, cost:{money:5}, slots:[0,1,2,3], companion:true },
+  { id:"chat",        name:"💬 聊天",     eff:{eq:2, charm:1, stress:-1}, slots:[0,1,2,3], companion:true },
+  { id:"sleep",       name:"😴 睡觉",     eff:{stamina:10, stress:-3}, slots:[3,4] },
+  { id:"watch_match", name:"📺 看比赛",   eff:{stress:-5, game_knowledge:2}, slots:[1,2,3], companion:true },
+  { id:"club_xingyun",name:"💻 星云网络社", eff:{ lol_skill:3, game_knowledge:2, eq:1, chenletian_affection:2, kuangruifeng_affection:2, stress:-2}, tag:"社团", slots:[2], companion:false },
+  { id:"club_radio",  name:"📻 广播站",   eff:{ chinese:2, charm:3, eq:2, kuangruifeng_affection:3, stress:-2}, tag:"社团", slots:[2], companion:false },
+  /* 购物（世纪星商店/报刊亭） */
+  { id:"buy_snack",     name:"🍪 买零食",     eff:{stress:-2, stamina:1}, cost:{money:2},  tag:"购物", slots:[0,1,2,3], companion:true },
+  { id:"buy_drink",     name:"🥤 买饮料",     eff:{stamina:2, stress:-1},  cost:{money:3},  tag:"购物", slots:[0,1,2,3], companion:true },
+  { id:"buy_magazine",  name:"📰 买《读者》",  eff:{chinese:2, eq:1, stress:-2}, cost:{money:5},  tag:"购物", slots:[0,1,2,3] },
+  { id:"buy_football_mag", name:"⚽ 买《足球周刊》", eff:{football:2, game_knowledge:1, stress:-1}, cost:{money:10}, tag:"购物", slots:[0,1,2,3] },
+  { id:"buy_esports_mag", name:"🕹️ 买《电子竞技》", eff:{lol_skill:2, game_knowledge:2, stress:-1}, cost:{money:12}, tag:"购物", slots:[0,1,2,3] },
+  { id:"buy_ref_book",  name:"📘 买学习参考书", eff:{intelligence:3, math:2, stress:1}, cost:{money:15}, tag:"购物", slots:[0,1,2,3] },
+  { id:"buy_lottery",   name:"🎟️ 买彩票",     eff:{stress:-1}, cost:{money:5}, tag:"购物", slots:[0,1,2,3], special:"lottery" },
+  { id:"buy_phone",     name:"📱 偷偷买手机",   eff:{lol_skill:5, game_knowledge:3, charm:3, stress:10, popularity:3}, cost:{money:500}, tag:"购物", slots:[0,1,2,3] },
+  { id:"buy_itouch",    name:"🎧 买iTouch",   eff:{charm:5, popularity:5, game_knowledge:5, lol_skill:2, stress:5}, cost:{money:800}, tag:"购物", slots:[0,1,2,3] },
+  /* 食堂吃饭（早/午/晚饭时段，不能在深夜） */
+  { id:"eat_dacai",     name:"🍚 吃打菜",     eff:{stamina:3, stress:-1}, cost:{money:5},  tag:"食堂", slots:[0,1,2,3], companion:true },
+  { id:"eat_xiaochao",  name:"🍲 吃小炒",     eff:{stamina:6, stress:-3, charm:1}, cost:{money:12}, tag:"食堂", slots:[0,1,2,3], companion:true },
+  { id:"eat_treat",     name:"🍻 请同学吃饭", eff:{eq:3, popularity:5, charm:2, stress:-2}, cost:{money:20}, tag:"食堂", slots:[0,1,2,3], companion:true },
+  /* 借手机/溜网吧（有风险） */
+  { id:"borrow_phone",  name:"🤳 借同学手机玩", eff:{lol_skill:3, game_knowledge:2, stress:-2}, tag:"风险", slots:[1,2,3], companion:true, special:"borrow_phone" },
+  { id:"sneak_netbar",  name:"🌙 半夜溜去网吧", eff:{lol_skill:5, game_knowledge:3, stress:-3, stamina:-5}, cost:{money:10}, tag:"风险", slots:[4], companion:true, special:"sneak_netbar" },
+];
+
+/* ---------- 时段 ---------- */
+const TIME_SLOTS = ["早读","上午","下午","晚自习","深夜"];
+
+/* ---------- 游戏状态 ---------- */
+let state = null;
+
+function initState() {
+  state = {
+    day: 1,           // 游戏内天数（从2013.09.01起）
+    slot: 0,          // 0-4 时段索引
+    chapter: 0,       // 0序章,1日常,2世界杯,3S4,4高三,5高考
+    dorm: null,
+    attrs: {},
+    affections: {},   // charId -> 好感度
+    freeActionsLeft: 5, // 当前时段剩余自由行动数（实际就是每时段1个）
+    flags: {
+      prologueComplete: false,
+      noticedChar: null,
+      ch1Complete: false,
+      ch2Complete: false,
+      ch3Complete: false,
+      ch4Complete: false,
+      worldCupWatched: false,
+      s4Watched: false,
+      dropoutEvent: false,
+    },
+    log: [],
+    sceneQueue: [],   // 待播放的剧情
+    awaitingChoice: null,
+    phase: "prologue", // prologue / freeAction / scene / ended
+    pendingChapterEvent: null,
+    lastAllowanceMonth: 8,   // 上次发放零花钱的月份（起始9月前记为8）
+    lastExamScore: 0,        // 上次考试总分（用于对比提升）
+    examCount: 0,            // 已经历考试次数
+    pendingExam: null,       // 待触发的考试类型 (monthly/midterm/final/mock)
+  };
+  ATTRS.forEach(a => state.attrs[a.name] || (state.attrs[a.key] = a.default));
+  // 用key存
+  ATTRS.forEach(a => state.attrs[a.key] = a.default);
+  // stress 与 money 不在 ATTRS 中，单独初始化
+  state.attrs.stress = 0;
+  state.attrs.money = 100;   // 起始零花钱 100 元
+  // 初始化好感度
+  Object.keys(CHARACTERS).forEach(id => state.affections[id] = 0);
+}
+
+/* ---------- 日期计算 ---------- */
+function getDateStr() {
+  // 起始 2013.09.01
+  const start = new Date(2013, 8, 1);
+  const cur = new Date(start);
+  cur.setDate(start.getDate() + state.day - 1);
+  const y = cur.getFullYear();
+  const m = String(cur.getMonth()+1).padStart(2,"0");
+  const d = String(cur.getDate()).padStart(2,"0");
+  return `${y}.${m}.${d}`;
+}
+
+function getCountdown() {
+  // 高考 2015.06.07
+  const start = new Date(2013, 8, 1);
+  const gao = new Date(2015, 5, 7);
+  const cur = new Date(start);
+  cur.setDate(start.getDate() + state.day - 1);
+  const diff = Math.ceil((gao - cur) / 86400000);
+  return diff;
+}
+
+/* ---------- UI 渲染 ---------- */
+function renderTopbar() {
+  document.getElementById("info-date").textContent = getDateStr();
+  document.getElementById("info-slot").textContent = TIME_SLOTS[state.slot] || "—";
+  document.getElementById("info-chapter").textContent = chapterName(state.chapter);
+  document.getElementById("info-dorm").textContent = state.dorm ? DORMS[state.dorm].name : "—";
+  const cd = getCountdown();
+  document.getElementById("info-countdown").textContent = cd > 0 ? `距高考 ${cd} 天` : "高考进行中";
+}
+
+function chapterName(c) {
+  return ["序章·分班","第一章·日常","第二章·世界杯之夏","第三章·英雄联盟S4","终章·高三","高考"][c] || "—";
+}
+
+function renderAttrs() {
+  const groups = {};
+  ATTRS.forEach(a => {
+    if (!groups[a.group]) groups[a.group] = [];
+    groups[a.group].push(a);
+  });
+  let html = "";
+  // 属性
+  Object.keys(groups).forEach(g => {
+    html += `<div class="attr-section"><div class="attr-section-title">[ ${g} ]</div>`;
+    groups[g].forEach(a => {
+      const v = state.attrs[a.key] || 0;
+      const pct = Math.min(100, v);
+      const cls = a.key === "stress" ? "stress" : (a.key === "money" ? "money" : "");
+      html += `<div class="attr-row ${cls}">
+        <div class="name">${a.name}</div>
+        <div class="bar"><div class="fill" style="width:${pct}%"></div></div>
+        <div class="val">${v}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  // money & stress 特殊
+  html += `<div class="attr-section"><div class="attr-section-title">[ 状态 ]</div>`;
+  html += `<div class="attr-row money">
+    <div class="name">💰 零花钱</div>
+    <div class="bar"><div class="fill" style="width:${Math.min(100, state.attrs.money||100)}%"></div></div>
+    <div class="val">${state.attrs.money||0}</div>
+  </div>`;
+  html += `<div class="attr-row stress">
+    <div class="name">😵 压力</div>
+    <div class="bar"><div class="fill" style="width:${Math.min(100, state.attrs.stress||0)}%"></div></div>
+    <div class="val">${state.attrs.stress||0}</div>
+  </div>`;
+  html += `</div>`;
+  document.getElementById("attr-list").innerHTML = html;
+}
+
+function renderChars() {
+  let html = "";
+  // 显示玩家自己（前期不显示参考大学，只在结局揭示）
+  if (state.playerCharId) {
+    const pc = CHARACTERS[state.playerCharId];
+    html += `<div class="char-row me-row">
+      <span class="char-name">👤 我 · ${pc.name}</span>
+      <span class="char-aff">${state.affections[state.playerCharId]||0}</span>
+    </div>`;
+  }
+  // 分组显示所有人物：男生按宿舍，女生按类型
+  const groupOrder = ["212宿舍","213宿舍","214宿舍","走读生","女生·学习型","女生·文艺型","女生·体育型","女生·社交型"];
+  const groups = {};
+  Object.keys(CHARACTERS).forEach(id => {
+    if (id === state.playerCharId) return; // 跳过玩家自己
+    const c = CHARACTERS[id];
+    let g = c.dorm ? `${c.dorm}宿舍` : `女生·${c.type}`;
+    if (c.dorm === "走读") g = "走读生";
+    if (!c.dorm) g = `女生·${c.type}`;
+    if (!groupOrder.includes(g)) g = "女生·社交型";
+    if (!groups[g]) groups[g] = [];
+    groups[g].push({ id, c });
+  });
+  groupOrder.forEach(g => {
+    if (!groups[g] || !groups[g].length) return;
+    html += `<div class="char-group-title">${g}</div>`;
+    groups[g].forEach(({id, c}) => {
+      const aff = state.affections[id] || 0;
+      const isF = c.gender === "female";
+      const star = aff >= 80 ? " ★" : (aff >= 40 ? " ·" : "");
+      html += `<div class="char-row ${isF?'female':''}">
+        <span class="char-name">${c.name}${c.role?`<span class="char-role">[${c.role}]</span>`:""}${star}</span>
+        <span class="char-aff">${aff}</span>
+      </div>`;
+    });
+  });
+  document.getElementById("char-list").innerHTML = html;
+}
+
+/* ---------- 应用效果 ---------- */
+function applyEffects(eff, silent=false) {
+  if (!eff) return;
+  const deltas = [];
+  Object.keys(eff).forEach(k => {
+    let key = k;
+    // 好感度后缀
+    if (k.endsWith("_affection")) {
+      const charId = k.replace("_affection","");
+      if (state.affections[charId] !== undefined) {
+        state.affections[charId] = Math.max(0, state.affections[charId] + eff[k]);
+        if (!silent) deltas.push({ name: CHARACTERS[charId]?.name + "好感", v: eff[k] });
+      }
+      return;
+    }
+    if (state.attrs[key] !== undefined) {
+      state.attrs[key] = Math.max(0, Math.min(ATTRS.find(a=>a.key===key)?.max || 100, state.attrs[key] + eff[k]));
+      if (!silent) deltas.push({ name: ATTRS.find(a=>a.key===key)?.name || key, v: eff[k] });
+    } else if (key === "money") {
+      state.attrs.money = Math.max(0, (state.attrs.money||0) + eff[k]);
+      if (!silent) deltas.push({ name: "💰 零花钱", v: eff[k] });
+    } else if (key === "stress") {
+      state.attrs.stress = Math.max(0, (state.attrs.stress||0) + eff[k]);
+      if (!silent) deltas.push({ name: "😵 压力", v: eff[k] });
+    }
+  });
+  if (!silent && deltas.length) showToast(deltas);
+  renderAttrs();
+  renderChars();
+}
+
+function showToast(deltas) {
+  const t = document.getElementById("toast");
+  let html = "";
+  deltas.forEach(d => {
+    const cls = d.v >= 0 ? "pos" : "neg";
+    const sign = d.v >= 0 ? "+" : "";
+    html += `<span class="delta ${cls}">${d.name} ${sign}${d.v}</span>`;
+  });
+  t.innerHTML = html;
+  t.classList.add("show");
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+/* ---------- 场景背景图（用CSS渐变模拟） ---------- */
+const BACKGROUNDS = {
+  school_gate: "linear-gradient(135deg, #1a3a1f 0%, #0a1a0d 50%, #2a4a1f 100%)",
+  classroom:   "linear-gradient(135deg, #0a2a1a 0%, #0a1410 50%, #1a3a2a 100%)",
+  playground:  "linear-gradient(135deg, #2a4a1f 0%, #0a2a1a 50%, #1a3a1f 100%)",
+  dormitory:   "linear-gradient(135deg, #1a2a1a 0%, #050a07 50%, #1a1a2a 100%)",
+  bedroom_night:"linear-gradient(135deg, #050a07 0%, #0a0510 50%, #1a0a1a 100%)",
+  netbar:      "linear-gradient(135deg, #1a0a2a 0%, #050a07 50%, #2a1a0a 100%)",
+  exam_room:   "linear-gradient(135deg, #0a0a0a 0%, #0a1410 50%, #1a1a1a 100%)",
+  graduation:  "linear-gradient(135deg, #0a3a1a 0%, #1a4a2a 50%, #2a5a3a 100%)",
+};
+
+function setBackground(bg, title) {
+  const el = document.getElementById("scene-bg");
+  el.style.background = BACKGROUNDS[bg] || BACKGROUNDS.classroom;
+  document.getElementById("scene-title").textContent = title || "";
+  document.getElementById("scene-chapter").textContent = chapterName(state.chapter);
+}
+
+/* ---------- 对话渲染 ---------- */
+function renderScene(scene) {
+  setBackground(scene.background, scene.title || scene.id);
+  const da = document.getElementById("dialogue-area");
+  da.innerHTML = "";
+  let idx = 0;
+  function next() {
+    if (idx >= scene.lines.length) {
+      // 处理 choice 或 effects
+      if (scene.choice) {
+        renderChoice(scene.choice);
+      } else if (scene.effects) {
+        applyEffects(scene.effects);
+        showContinueBtn(() => onSceneEnd(scene));
+      } else if (scene.conditional) {
+        // 条件分支
+        let matched = null;
+        for (const c of scene.conditional) {
+          if (evalCondition(c.if)) { matched = c; break; }
+        }
+        if (!matched) matched = scene.conditional[scene.conditional.length-1];
+        addNarration(matched.text);
+        showContinueBtn(() => onSceneEnd(scene, matched.next));
+      } else {
+        showContinueBtn(() => onSceneEnd(scene));
+      }
+      return;
+    }
+    const line = scene.lines[idx]; idx++;
+    if (line.type === "narration") {
+      addNarration(line.text);
+      next();
+    } else if (line.type === "character") {
+      addSpeech(line.char, line.text, line.emotion);
+      next();
+    } else if (line.type === "choice") {
+      renderChoice(line);
+    } else if (line.type === "effects") {
+      applyEffects(line.changes);
+      next();
+    } else if (line.type === "conditional") {
+      let matched = null;
+      for (const c of line.conditions) if (evalCondition(c.if)) { matched = c; break; }
+      if (!matched) matched = line.conditions[line.conditions.length-1];
+      addNarration(matched.text);
+      next();
+    } else {
+      next();
+    }
+  }
+  next();
+}
+
+function addNarration(text) {
+  const da = document.getElementById("dialogue-area");
+  const d = document.createElement("div");
+  d.className = "narration";
+  // 替换占位符
+  let t = text;
+  if (state.playerCharId) {
+    const pc = CHARACTERS[state.playerCharId];
+    t = t.replace(/{_player_name}/g, pc?.name || "我");
+    t = t.replace(/{_player_ref}/g, pc?.ref || "—");
+    t = t.replace(/{_player_hobby}/g, pc?.hobby || "—");
+  }
+  if (state.dorm) {
+    t = t.replace(/{_dorm_name}/g, DORMS[state.dorm]?.name || state.dorm);
+  }
+  d.textContent = t;
+  da.appendChild(d);
+  da.scrollTop = da.scrollHeight;
+}
+
+function addSpeech(char, text, emotion) {
+  const da = document.getElementById("dialogue-area");
+  const d = document.createElement("div");
+  let cls = "speech";
+  let speaker = char;
+  if (char === "TEACHER") { cls += " teacher"; speaker = "老张（班主任）"; }
+  else if (char === "PROTAGONIST") { cls += ""; speaker = state.playerCharId ? `${CHARACTERS[state.playerCharId].name}（我）` : "我"; }
+  else {
+    // 查找角色
+    const found = Object.values(CHARACTERS).find(c => c.name === char);
+    if (found && found.gender === "female") cls += " female";
+    speaker = char;
+  }
+  d.className = cls;
+  d.innerHTML = `<div class="speaker">${speaker}</div><div class="text">${text}</div>`;
+  da.appendChild(d);
+  da.scrollTop = da.scrollHeight;
+}
+
+function renderChoice(choice) {
+  const ca = document.getElementById("choice-area");
+  ca.innerHTML = `<div class="choice-prompt">▸ ${choice.prompt}</div>`;
+  // 动态选项：全部人物
+  let optionsList = choice.options;
+  if (optionsList === "_all_characters") {
+    optionsList = buildAllCharacterOptions();
+  } else if (optionsList === "_all_males") {
+    optionsList = buildMaleCharacterOptions();
+  }
+  // 分组渲染（如果是人物列表）
+  const isCharList = optionsList.length > 0 && optionsList[0]._isChar;
+  if (isCharList) {
+    const groups = {};
+    optionsList.forEach(o => { if (!groups[o._group]) groups[o._group] = []; groups[o._group].push(o); });
+    Object.keys(groups).forEach(g => {
+      const lbl = document.createElement("div");
+      lbl.className = "group-label";
+      lbl.textContent = `[ ${g} ]`;
+      ca.appendChild(lbl);
+      const grid = document.createElement("div");
+      grid.className = "char-grid";
+      groups[g].forEach(opt => grid.appendChild(makeChoiceBtn(opt, choice)));
+      ca.appendChild(grid);
+    });
+  } else {
+    optionsList.forEach(opt => ca.appendChild(makeChoiceBtn(opt, choice)));
+  }
+}
+
+function makeChoiceBtn(opt, choice) {
+  const btn = document.createElement("button");
+  btn.className = "choice-btn";
+  let effHtml = "";
+  if (opt.effects) {
+    const parts = [];
+    Object.keys(opt.effects).forEach(k => {
+      const v = opt.effects[k];
+      const sign = v >= 0 ? "+" : "";
+      const cls = v >= 0 ? "plus" : "minus";
+      let label = k;
+      if (k.endsWith("_affection")) label = (CHARACTERS[k.replace("_affection","")]?.name || k) + "好感";
+      else label = ATTRS.find(a => a.key === k)?.name || k;
+      parts.push(`<span class="${cls}">${label} ${sign}${v}</span>`);
+    });
+    effHtml = `<span class="eff">[${parts.join(" · ")}]</span>`;
+  }
+  let disabled = false;
+  if (opt.condition) disabled = !evalCondition(opt.condition);
+  btn.innerHTML = `▸ ${opt.text} ${effHtml}`;
+  if (disabled) { btn.disabled = true; btn.innerHTML += ` <span class="eff">[条件不足]</span>`; }
+  btn.onclick = () => {
+    if (opt.effects) applyEffects(opt.effects);
+    if (opt.id && opt.id.startsWith("notice_")) {
+      state.flags.noticedChar = opt.id.replace("notice_","");
+    }
+    if (opt.id && opt.id.startsWith("dorm_")) {
+      state.dorm = opt.id;
+      applyEffects(DORMS[opt.id].bonuses);
+      renderTopbar();
+    }
+    // 玩家身份选择
+    if (choice._key === "whoami" && CHARACTERS[opt.id]) {
+      applyPlayerIdentity(opt.id);
+      renderTopbar();
+      renderAttrs();
+      renderChars();
+    }
+    document.getElementById("choice-area").innerHTML = "";
+    onChoiceResolved(choice, opt);
+  };
+  return btn;
+}
+
+function buildAllCharacterOptions() {
+  const groups = {
+    "212宿舍": [],
+    "213宿舍": [],
+    "214宿舍": [],
+    "走读生": [],
+    "女生·学习型": [],
+    "女生·文艺型": [],
+    "女生·体育型": [],
+    "女生·社交型": [],
+  };
+  Object.keys(CHARACTERS).forEach(id => {
+    const c = CHARACTERS[id];
+    let g = c.dorm ? `${c.dorm}宿舍` : `女生·${c.type}`;
+    if (c.dorm === "走读") g = "走读生";
+    if (!c.dorm) g = `女生·${c.type}`;
+    if (!groups[g]) g = "女生·社交型";
+    // 前期不显示参考大学，只显示性别和爱好
+    let hobby = (c.hobby && c.hobby !== "-") ? `·爱好:${c.hobby}` : "";
+    let role = c.role ? `·${c.role}` : "";
+    groups[g].push({
+      id: `notice_${id}`,
+      text: `${c.name}（${c.gender==="female"?"女":"男"}${hobby}${role}）`,
+      effects: { [`${id}_affection`]: 5 },
+      _isChar: true,
+      _group: g
+    });
+  });
+  const list = [];
+  Object.keys(groups).forEach(g => groups[g].forEach(o => list.push(o)));
+  return list;
+}
+
+/* 玩家可选的男生列表（28人，按宿舍分组） */
+function buildMaleCharacterOptions() {
+  const groups = { "212宿舍":[], "213宿舍":[], "214宿舍":[], "走读生":[] };
+  Object.keys(CHARACTERS).forEach(id => {
+    const c = CHARACTERS[id];
+    if (c.gender !== "male") return;
+    let g = c.dorm === "走读" ? "走读生" : `${c.dorm}宿舍`;
+    if (!groups[g]) g = "212宿舍";
+    // 前期不显示参考大学，只显示爱好
+    let hobby = c.hobby && c.hobby !== "-" ? `·${c.hobby}` : "";
+    let role = c.role ? `·${c.role}` : "";
+    groups[g].push({
+      id: id,
+      text: `${c.name}（${id}${hobby}${role}）`,
+      effects: {},
+      _isChar: true,
+      _group: g
+    });
+  });
+  const list = [];
+  Object.keys(groups).forEach(g => groups[g].forEach(o => list.push(o)));
+  return list;
+}
+
+/* 根据所选男生应用初始加成 */
+function applyPlayerIdentity(charId) {
+  const c = CHARACTERS[charId];
+  if (!c) return;
+  state.playerCharId = charId;
+  // 宿舍自动确定
+  if (c.dorm === "走读") state.dorm = "day_student";
+  else state.dorm = `dorm_${c.dorm}`;
+  // 基于爱好的初始属性加成
+  const bonus = { stamina:5, stress:0 };
+  if (c.hobby && c.hobby.includes("lol")) { bonus.lol_skill = 8; bonus.game_knowledge = 3; bonus.intelligence = -2; }
+  if (c.hobby && c.hobby.includes("足球")) { bonus.football = 8; bonus.sports = 4; }
+  if (c.role === "足球队长") { bonus.football = 5; bonus.popularity = 5; bonus.charm = 2; }
+  if (c.ref === "北京邮电大学") { bonus.intelligence = 5; bonus.math = 3; }
+  if (c.ref === "来年再战") { bonus.intelligence = -2; bonus.stress = 5; }
+  applyEffects(bonus, true);
+  // 应用宿舍加成
+  if (DORMS[state.dorm]) applyEffects(DORMS[state.dorm].bonuses, true);
+}
+
+function onChoiceResolved(choice, opt) {
+  // 默认：本场景结束，触发onSceneEnd
+  if (choice._onEnd) {
+    choice._onEnd(opt);
+  } else {
+    showContinueBtn(() => onSceneEnd(currentScene));
+  }
+}
+
+let currentScene = null;
+function showContinueBtn(cb) {
+  const ca = document.getElementById("choice-area");
+  ca.innerHTML = "";
+  const btn = document.createElement("button");
+  btn.className = "choice-btn";
+  btn.style.textAlign = "center";
+  btn.textContent = "▸ 继续";
+  btn.onclick = cb;
+  ca.appendChild(btn);
+}
+
+/* ---------- 条件求值 ---------- */
+function evalCondition(cond) {
+  if (!cond) return true;
+  try {
+    // 简化条件语法
+    // day_student: state.dorm === 'day_student'
+    // chapter_X_complete: state.flags.chXComplete
+    // intelligence >= 90: state.attrs.intelligence >= 90
+    // intelligence >= 90 && stress <= 30
+    let expr = cond
+      .replace(/day_student/g, `state.dorm === 'day_student'`)
+      .replace(/dorm_(\d+)/g, `state.dorm === 'dorm_$1'`)
+      .replace(/player_dorm == (\d+)/g, `state.dorm === 'dorm_$1'`)
+      .replace(/player_type == day_student/g, `state.dorm === 'day_student'`)
+      .replace(/prologue_complete/g, `state.flags.prologueComplete`)
+      .replace(/chapter_(\d)_complete/g, `state.flags.ch$1Complete`)
+      .replace(/\b(intelligence|chinese|math|english|comprehensive|stamina|sports|football|lol_skill|game_knowledge|charm|eq|popularity|stress|money)\b/g, `state.attrs.$1`)
+      .replace(/(\w+)_affection/g, `(state.affections['$1']||0)`);
+    return !!eval(expr);
+  } catch (e) {
+    console.warn("条件求值失败:", cond, e);
+    return false;
+  }
+}
+
+/* ---------- 剧情脚本（按文档8.x章节） ---------- */
+const SCENES = {
+  // 序章
+  prologue_00: {
+    id:"prologue_00", title:"开学·你是423班的哪位男生", background:"school_gate",
+    lines: [
+      { type:"narration", text:"🏫 2013年9月，湘潭县一中。高二分班。" },
+      { type:"narration", text:"📋 423班62个人，你也是其中之一——名单公布前，先决定你是这28个男生中的哪一位。" },
+      { type:"narration", text:"🎲 你的宿舍、爱好都将由此确定，并影响整个高中三年的故事。" },
+      { type:"choice", _key:"whoami", prompt:"你是423班的哪位男生？（决定宿舍/爱好/初始属性）", options:"_all_males" }
+    ]
+  },
+  prologue_01: {
+    id:"prologue_01", title:"湘潭县一中·校门", background:"school_gate",
+    lines: [
+      { type:"narration", text:"🏫 2013年9月，湘潭县一中。" },
+      { type:"narration", text:"🎓 高二分班，我被分到了423班。" },
+      { type:"narration", text:"🚪 教室在教学楼三楼最东头，门口贴着新的班级名单。" },
+      { type:"narration", text:"🛏️ （你的宿舍已由身份决定：{_dorm_name}）" }
+    ]
+  },
+  prologue_02: {
+    id:"prologue_02", title:"423教室", background:"classroom",
+    lines: [
+      { type:"narration", text:"👥 423班，62个人。" },
+      { type:"character", char:"TEACHER", text:"我是你们的班主任，姓陈，教语文。" },
+      { type:"character", char:"TEACHER", text:"423班，从今天起就是一个集体。" },
+      { type:"narration", text:"📅 教室后墙上贴着一张新的高考倒计时牌——" },
+      { type:"narration", text:'"距离2015年高考还有645天"。' },
+    ]
+  },
+  prologue_03: {
+    id:"prologue_03", title:"环顾教室", background:"classroom",
+    lines: [
+      { type:"narration", text:"👀 我环顾四周，62个人的面孔在我眼前展开。" },
+      { type:"narration", text:"🛏️ 男生按宿舍分堆：212、213、214、走读；女生三五成群，或站或坐。" },
+      { type:"choice", _key:"notice_all", prompt:"你最先注意到谁？（从全班同学中选择）", options:"_all_characters" }
+    ]
+  },
+
+  // 宿舍夜话
+  dorm_212_night: {
+    id:"dorm_212_night", title:"212宿舍·夜", background:"dormitory",
+    lines: [
+      { type:"narration", text:"🌙 212宿舍，9个人。熄灯后，旷锐锋还在用手电筒看数学题。" },
+      { type:"character", char:"旷锐锋", text:"今天的最后一题，你们做了吗？" },
+      { type:"character", char:"冯梓豪", text:"别聊学习了，明天体育课踢球。" },
+      { type:"character", char:"胡思任", text:"陈乐天说明天要教我们倒钩。" },
+      { type:"choice", prompt:"你加入谁？", options:[
+        { id:"join_study", text:"📚 和旷锐锋一起刷题", effects:{ intelligence:3, kuangruifeng_affection:3 } },
+        { id:"join_football", text:"⚽ 和冯梓豪聊足球", effects:{ football:3, fengzihao_affection:3 } },
+        { id:"sleep", text:"😴 直接睡觉", effects:{ stamina:3 } },
+      ] }
+    ]
+  },
+  dorm_213_night: {
+    id:"dorm_213_night", title:"213宿舍·夜", background:"dormitory",
+    lines: [
+      { type:"narration", text:"🎮 213宿舍，是423班LOL氛围最浓的地方。" },
+      { type:"character", char:"刘刚鹏", text:"今晚S4有OMG的比赛！" },
+      { type:"character", char:"陈浩", text:"宿舍没网，怎么看？" },
+      { type:"character", char:"刘刚鹏", text:"我用手机刷文字直播，你们听我播报。" },
+      { type:"character", char:"刘刚鹏", text:"50血！OMG基地只剩50血！翻盘了！！！" },
+      { type:"character", char:"陈浩", text:"周末去极速网络，我教你们打野。" },
+      { type:"effects", changes:{ liugangpeng_affection:3, chenhao_affection:2, lol_skill:2 } },
+    ]
+  },
+  dorm_214_night: {
+    id:"dorm_214_night", title:"214宿舍·夜", background:"dormitory",
+    lines: [
+      { type:"narration", text:"🛌 214宿舍，人员最复杂。有准备考军校的陈乐天和赵城林，有复读的符银汉和赵博，还有准备参军的尹宇豪。" },
+      { type:"character", char:"陈乐天", text:"我每天跑5公里，你们谁一起？" },
+      { type:"character", char:"符银汉", text:"我连题都做不完，还跑步……" },
+      { type:"character", char:"尹宇豪", text:"我跟你跑！反正我也要去部队了。" },
+      { type:"choice", prompt:"你的反应？", options:[
+        { id:"join_run", text:"🏃 跟陈乐天一起跑", effects:{ stamina:3, sports:2, chenletian_affection:3 } },
+        { id:"comfort", text:"🤝 安慰符银汉", effects:{ eq:2, fuyinhan_affection:3 } },
+        { id:"silent", text:"😴 默默睡觉", effects:{ stamina:3 } },
+      ] }
+    ]
+  },
+  day_student_night: {
+    id:"day_student_night", title:"走读·家", background:"bedroom_night",
+    lines: [
+      { type:"narration", text:"🏠 作为走读生，我有一个住校生没有的优势——家里有电脑。" },
+      { type:"narration", text:"💻 夜里11点，我打开电脑，登上QQ。" },
+      { type:"character", char:"PROTAGONIST", text:"……真好。能有自己的时间。" },
+      { type:"effects", changes:{ stamina:3, lol_skill:1 } },
+    ]
+  },
+
+  // 第一章·日常
+  ch1_01: {
+    id:"ch1_01", title:"423教室·早读", background:"classroom",
+    lines: [
+      { type:"narration", text:"423班的日常，从早读开始。" },
+      { type:"choice", prompt:"早读怎么过？", options:[
+        { id:"read_chinese", text:"认真背语文", effects:{ chinese:2 } },
+        { id:"read_english", text:"认真背英语", effects:{ english:2 } },
+        { id:"pass_note", text:"给女生传纸条", effects:{ eq:1, caozhuoer_affection:2 } },
+        { id:"sleep", text:"趴着补觉", effects:{ stamina:3 } },
+      ] }
+    ]
+  },
+  ch1_02: {
+    id:"ch1_02", title:"数学课", background:"classroom",
+    lines: [
+      { type:"character", char:"曹卓尔", text:"你听懂了吗？我完全没听懂。" },
+      { type:"choice", prompt:"怎么回应？", options:[
+        { id:"explain", text:"我懂了，我给你讲", effects:{ caozhuoer_affection:3, math:1, eq:1 } },
+        { id:"also_lost", text:"我也没懂", effects:{ caozhuoer_affection:2 } },
+        { id:"ignore", text:"别说话，听课", effects:{ math:1, caozhuoer_affection:-1 } },
+      ] }
+    ]
+  },
+  ch1_03: {
+    id:"ch1_03", title:"操场·体育课", background:"playground",
+    lines: [
+      { type:"character", char:"陈乐天", text:"423班足球队，集合！今天练配合。" },
+      { type:"narration", text:"操场上，足球、篮球、羽毛球、乒乓球场地都有人在玩。" },
+      { type:"choice", prompt:"体育课做什么？", options:[
+        { id:"play_football", text:"踢足球（和陈乐天）", effects:{ football:4, stamina:-4, chenletian_affection:3 } },
+        { id:"play_basketball", text:"打篮球", effects:{ sports:3, stamina:-3, charm:1 } },
+        { id:"play_badminton", text:"打羽毛球", effects:{ sports:3, stamina:-2, charm:1, eq:1 } },
+        { id:"play_pingpong", text:"打乒乓球", effects:{ sports:2, stamina:-2, eq:1, charm:1 } },
+        { id:"run_laps", text:"绕操场跑步", effects:{ stamina:5, sports:2, stress:-2 } },
+        { id:"walk_girls", text:"和女生散步聊天", effects:{ eq:2, charm:1, caozhuoer_affection:2 } },
+        { id:"study", text:"回教室学习", effects:{ intelligence:3, stress:1 } },
+      ] }
+    ]
+  },
+
+  // 第二章·世界杯
+  ch2_01: {
+    id:"ch2_01", title:"世界杯开幕前夜", background:"classroom",
+    lines: [
+      { type:"character", char:"陈乐天", text:"明天世界杯开幕！巴西对克罗地亚！" },
+      { type:"choice", prompt:"你怎么看世界杯？", options:[
+        { id:"watch_home", text:"回家用电脑看直播（走读）", effects:{ stamina:-5, stress:-3, football:2 }, condition:"day_student" },
+        { id:"watch_dorm", text:"在宿舍用手机刷文字直播", effects:{ stamina:-2, stress:-2, football:1 } },
+        { id:"watch_netbar", text:"去网吧看", effects:{ stamina:-3, stress:-3, money:-5, football:2 } },
+        { id:"not_watch", text:"不看，学习", effects:{ intelligence:3, chenletian_affection:-2 } },
+      ] }
+    ]
+  },
+  ch2_02: {
+    id:"ch2_02", title:"班级足球赛报名", background:"classroom",
+    lines: [
+      { type:"character", char:"陈乐天", text:"昨天巴西3-1克罗地亚！内马尔进了两个！" },
+      { type:"character", char:"陈乐天", text:"对了，学校要组织班级足球赛了，你们谁报？" },
+      { type:"choice", prompt:"足球赛报名", options:[
+        { id:"join_forward", text:"报名前锋", effects:{ football:3, stamina:2, chenletian_affection:5 } },
+        { id:"join_midfield", text:"报名中场", effects:{ football:2, eq:1, chenletian_affection:3 } },
+        { id:"join_cheer", text:"当啦啦队（和女生一起）", effects:{ charm:2, eq:1, caozhuoer_affection:2 } },
+        { id:"not_join", text:"不参加", effects:{ intelligence:2, chenletian_affection:-1 } },
+      ] }
+    ]
+  },
+  ch2_03: {
+    id:"ch2_03", title:"世界杯决赛夜", background:"bedroom_night",
+    lines: [
+      { type:"narration", text:"2014年7月9日，凌晨。德国对巴西，半决赛。" },
+      { type:"narration", text:"德国7-1巴西。" },
+      { type:"narration", text:"2014年7月14日，决赛。德国1-0阿根廷，格策加时赛绝杀。" },
+      { type:"narration", text:"德国夺冠。" },
+      { type:"effects", changes:{ chenletian_affection:3, football:5, stress:-5, game_knowledge:3 } },
+    ]
+  },
+
+  // 第三章·S4
+  ch3_01: {
+    id:"ch3_01", title:"S4全球总决赛", background:"classroom",
+    lines: [
+      { type:"narration", text:"2014年9月，S4全球总决赛开始。" },
+      { type:"character", char:"刘刚鹏", text:"今晚有OMG的比赛！" },
+      { type:"character", char:"陈浩", text:"放学后去极速网络？" },
+      { type:"choice", prompt:"去网吧吗？", options:[
+        { id:"go_netbar", text:"去网吧看比赛", effects:{ lol_skill:3, stress:-3, chenhao_affection:3, money:-5 } },
+        { id:"go_home", text:"回家用电脑看（走读）", effects:{ stress:-2, lol_skill:1 }, condition:"day_student" },
+        { id:"text_update", text:"用手机刷文字直播", effects:{ stress:-1, lol_skill:1 } },
+        { id:"study", text:"不看了，学习", effects:{ intelligence:3, chenhao_affection:-2 } },
+      ] }
+    ]
+  },
+  ch3_02: {
+    id:"ch3_02", title:"极速网络网吧", background:"netbar",
+    lines: [
+      { type:"character", char:"刘刚鹏", text:"50血！OMG基地只剩50血！翻盘了！！！" },
+      { type:"narration", text:"整个网吧都沸腾了。" },
+      { type:"character", char:"陈浩", text:"周末来开黑，我教你打野。" },
+      { type:"effects", changes:{ lol_skill:3, chenhao_affection:3, liugangpeng_affection:3, stress:-2 } },
+    ]
+  },
+
+  // 终章·高三
+  ch4_01: {
+    id:"ch4_01", title:"高三开学", background:"classroom",
+    lines: [
+      { type:"narration", text:"2014年9月，高三开学。" },
+      { type:"character", char:"TEACHER", text:"从今天起，体育课取消，音乐课取消，美术课取消。所有的时间，都给高考。" },
+      { type:"choice", prompt:"高三第一天的状态", options:[
+        { id:"determined", text:"全力以赴", effects:{ intelligence:5, stress:3, stamina:-3 } },
+        { id:"anxious", text:"很焦虑", effects:{ stress:5 } },
+        { id:"numb", text:"麻木", effects:{ stress:2 } },
+      ] }
+    ]
+  },
+  ch4_02: {
+    id:"ch4_02", title:"高考·2015年6月7日", background:"exam_room",
+    lines: [
+      { type:"narration", text:"2015年6月7日。高考。" },
+      { type:"conditional", conditions:[
+        { if:"intelligence >= 90 && stress <= 30", text:"试卷上的题，我全都见过。我答得很稳。", next:"ch4_good" },
+        { if:"intelligence >= 60", text:"有些题会，有些题不确定。我尽力了。", next:"ch4_mid" },
+        { if:"intelligence < 40", text:"很多题都不会。我只能尽量写满。", next:"ch4_bad" },
+      ] }
+    ]
+  },
+  ch4_good: {
+    id:"ch4_good", title:"红榜·第一名", background:"school_gate",
+    lines: [
+      { type:"narration", text:"成绩出来了。我考上了清华大学。" },
+      { type:"character", char:"TEACHER", text:"不错，没白费三年。" },
+      { type:"narration", text:"423班的红榜上，我的名字在最前面。" },
+    ]
+  },
+  ch4_mid: {
+    id:"ch4_mid", title:"红榜·普通本科", background:"school_gate",
+    lines: [
+      { type:"narration", text:"成绩出来了。我考上了一所普通本科。" },
+      { type:"character", char:"曹卓尔", text:"挺好的，咱们以后还在一个城市。" },
+    ]
+  },
+  ch4_bad: {
+    id:"ch4_bad", title:"红榜·落榜", background:"school_gate",
+    lines: [
+      { type:"narration", text:"成绩出来了。我落榜了。" },
+      { type:"character", char:"TEACHER", text:"……没事，复读一年，明年再来。" },
+      { type:"narration", text:"423班有5个人选择了复读——符银汉、韩昶、尹宇韬、赵博、左文慧。你成了第6个。" },
+    ]
+  },
+  ch4_end: {
+    id:"ch4_end", title:"毕业典礼", background:"graduation",
+    lines: [
+      { type:"narration", text:"毕业典礼那天，教室里很吵。" },
+      { type:"character", char:"曹卓尔", text:"以后……还会联系吗？" },
+      { type:"character", char:"旷锐锋", text:"QQ群不会解散的。" },
+      { type:"narration", text:'走出校门的时候，我回头看了一眼。教学楼上的倒计时牌，定格在"0"。' },
+      { type:"narration", text:"2015年6月，夏天刚刚开始。青春不散场。" },
+    ]
+  },
+
+  /* 一年一届·秋季运动会 */
+  sports_meet: {
+    id:"sports_meet", title:"秋季运动会·开幕式", background:"playground",
+    lines: [
+      { type:"narration", text:"一年一届的秋季运动会，操场上彩旗飘扬。" },
+      { type:"character", char:"陈乐天", text:"423班的，都来操场集合！" },
+      { type:"narration", text:"项目报名板上列着：100米、1500米、跳远、铅球、4×100接力、羽毛球赛。" },
+      { type:"choice", prompt:"你报名哪个项目？", options:[
+        { id:"sm_100", text:"100米短跑（拼速度）", effects:{ sports:5, stamina:-3, chenletian_affection:3, popularity:3 } },
+        { id:"sm_1500", text:"1500米长跑（拼耐力）", effects:{ stamina:-5, sports:6, stress:-3, chenletian_affection:4 } },
+        { id:"sm_longjump", text:"跳远", effects:{ sports:4, stamina:-3, charm:2 } },
+        { id:"sm_shotput", text:"铅球", effects:{ sports:3, stamina:-3, popularity:2 } },
+        { id:"sm_relay", text:"4×100接力（团队）", effects:{ sports:4, stamina:-3, eq:3, chenletian_affection:5, popularity:5 } },
+        { id:"sm_badminton", text:"羽毛球赛", effects:{ sports:4, stamina:-2, charm:2, eq:2 } },
+        { id:"sm_cheer", text:"当啦啦队（和女生一起）", effects:{ charm:3, eq:2, caozhuoer_affection:3, popularity:3 } },
+        { id:"sm_no", text:"不参加，看台上学习", effects:{ intelligence:3, stress:1 } },
+      ] }
+    ]
+  },
+
+  /* 校园歌手大赛 */
+  singing_contest: {
+    id:"singing_contest", title:"校园歌手大赛·海选", background:"school_gate",
+    lines: [
+      { type:"narration", text:"一年一届的校园歌手大赛，礼堂里灯光耀眼。" },
+      { type:"character", char:"曹卓尔", text:"咱们班谁去报名？" },
+      { type:"narration", text:"舞台、灯光、麦克风，还有评委席。报名表就在门口。" },
+      { type:"choice", prompt:"你怎么办？", options:[
+        { id:"sc_join", text:"报名参赛·唱一首", effects:{ charm:6, eq:3, popularity:8, caozhuoer_affection:4, stress:-3, stamina:-2 }, condition:"charm >= 25" },
+        { id:"sc_duet", text:"和曹卓尔合唱", effects:{ charm:5, eq:4, popularity:6, caozhuoer_affection:8, stress:-2 }, condition:"caozhuoer_affection >= 20" },
+        { id:"sc_audience", text:"当观众加油", effects:{ eq:2, charm:1, caozhuoer_affection:2, stress:-2 } },
+        { id:"sc_backstage", text:"去后台帮忙（旷锐锋在广播站）", effects:{ eq:3, kuangruifeng_affection:4, charm:2 }, condition:"kuangruifeng_affection >= 10" },
+        { id:"sc_skip", text:"不去，回教室自习", effects:{ intelligence:3, stress:1 } },
+      ] }
+    ]
+  },
+};
+
+/* ---------- 剧情序列 ---------- */
+function startPrologue() {
+  state.phase = "scene";
+  state.chapter = 0;
+  renderTopbar();
+  hideActionBar();
+  playScene("prologue_00");
+}
+
+function playScene(sceneId) {
+  currentScene = SCENES[sceneId];
+  if (!currentScene) { console.error("场景不存在:", sceneId); return; }
+  document.getElementById("dialogue-area").innerHTML = "";
+  document.getElementById("choice-area").innerHTML = "";
+  state.sceneQueue = state.sceneQueue || [];
+  renderScene(currentScene);
+}
+
+function onSceneEnd(scene, nextId) {
+  // 推进剧情队列
+  if (nextId && SCENES[nextId]) {
+    playScene(nextId);
+    return;
+  }
+  // 序章流程
+  if (scene.id === "prologue_00") {
+    playScene("prologue_01"); return;
+  }
+  if (scene.id === "prologue_01") {
+    playScene("prologue_02"); return;
+  }
+  if (scene.id === "prologue_02") {
+    playScene("prologue_03"); return;
+  }
+  if (scene.id === "prologue_03") {
+    // 触发宿舍夜话
+    const dormScene = state.dorm === "day_student" ? "day_student_night" : `dorm_${state.dorm.split("_")[1]}_night`;
+    playScene(dormScene); return;
+  }
+  if (scene.id.startsWith("dorm_") || scene.id === "day_student_night") {
+    state.flags.prologueComplete = true;
+    state.chapter = 1;
+    state.flags.ch1Complete = false;
+    renderTopbar();
+    enterFreeActionMode();
+    return;
+  }
+  // 第一章日常
+  if (scene.id === "ch1_01") { playScene("ch1_02"); return; }
+  if (scene.id === "ch1_02") { playScene("ch1_03"); return; }
+  if (scene.id === "ch1_03") {
+    state.flags.ch1Complete = true;
+    state.chapter = 2;
+    renderTopbar();
+    document.getElementById("toast").innerHTML = `<span class="delta pos">一年一届·秋季运动会 来了！</span>`;
+    document.getElementById("toast").classList.add("show");
+    setTimeout(() => document.getElementById("toast").classList.remove("show"), 2000);
+    playScene("sports_meet");
+    return;
+  }
+  // 运动会结束后进入第二章
+  if (scene.id === "sports_meet") {
+    state.chapter = 2;
+    renderTopbar();
+    document.getElementById("toast").innerHTML = `<span class="delta pos">第二章·世界杯之夏 已解锁</span>`;
+    document.getElementById("toast").classList.add("show");
+    setTimeout(() => document.getElementById("toast").classList.remove("show"), 2000);
+    enterFreeActionMode();
+    return;
+  }
+  // 第二章
+  if (scene.id === "ch2_01") { playScene("ch2_02"); return; }
+  if (scene.id === "ch2_02") { playScene("ch2_03"); return; }
+  if (scene.id === "ch2_03") {
+    state.flags.ch2Complete = true;
+    state.flags.worldCupWatched = true;
+    state.chapter = 3;
+    renderTopbar();
+    document.getElementById("toast").innerHTML = `<span class="delta pos">校园歌手大赛 来了！</span>`;
+    document.getElementById("toast").classList.add("show");
+    setTimeout(() => document.getElementById("toast").classList.remove("show"), 2000);
+    playScene("singing_contest");
+    return;
+  }
+  // 歌手大赛结束后进入第三章
+  if (scene.id === "singing_contest") {
+    state.chapter = 3;
+    renderTopbar();
+    document.getElementById("toast").innerHTML = `<span class="delta pos">第三章·英雄联盟S4 已解锁</span>`;
+    document.getElementById("toast").classList.add("show");
+    setTimeout(() => document.getElementById("toast").classList.remove("show"), 2000);
+    enterFreeActionMode();
+    return;
+  }
+  // 第三章
+  if (scene.id === "ch3_01") { playScene("ch3_02"); return; }
+  if (scene.id === "ch3_02") {
+    state.flags.ch3Complete = true;
+    state.flags.s4Watched = true;
+    state.chapter = 4;
+    renderTopbar();
+    document.getElementById("toast").innerHTML = `<span class="delta pos">终章·高三与高考 已解锁</span>`;
+    document.getElementById("toast").classList.add("show");
+    setTimeout(() => document.getElementById("toast").classList.remove("show"), 2000);
+    enterFreeActionMode();
+    return;
+  }
+  // 终章
+  if (scene.id === "ch4_01") {
+    // 进入高考前最后一段自由行动（少量）
+    enterFinalPrepAfterCh4_01();
+    return;
+  }
+  if (scene.id === "ch4_02") {
+    // 已经在onSceneEnd里通过nextId处理
+    return;
+  }
+  if (scene.id === "ch4_good" || scene.id === "ch4_mid" || scene.id === "ch4_bad") {
+    playScene("ch4_end"); return;
+  }
+  if (scene.id === "ch4_end") {
+    showEnding();
+    return;
+  }
+  // 默认：回到自由行动
+  enterFreeActionMode();
+}
+
+/* ---------- 自由行动模式 ---------- */
+function enterFreeActionMode() {
+  state.phase = "freeAction";
+  document.getElementById("dialogue-area").innerHTML = `<div class="narration">▸ 自由行动时段。选择一项行动来推进时间。</div>`;
+  document.getElementById("choice-area").innerHTML = "";
+  setBackground(state.dorm === "day_student" ? "bedroom_night" : "classroom", "自由时段");
+  renderActionBar();
+  checkChapterTrigger();
+}
+
+function enterFinalPrep() {
+  state.phase = "freeAction";
+  setBackground("classroom", "高考前·最后冲刺");
+  document.getElementById("dialogue-area").innerHTML = `<div class="narration">▸ 高考在即，最后再做几次努力。</div>`;
+  document.getElementById("choice-area").innerHTML = "";
+  // 只允许学习类行动 + 休息
+  renderActionBar(true);
+}
+
+function renderActionBar(finalOnly=false) {
+  const bar = document.getElementById("action-bar");
+  bar.innerHTML = "";
+  let list = ACTIONS.slice();
+  if (finalOnly) {
+    list = list.filter(a => ["study","study_math","study_eng","study_comp","sleep","run"].includes(a.id));
+  } else {
+    // 按当前时段过滤：只显示该时段可用的行动
+    list = list.filter(a => !a.slots || a.slots.includes(state.slot));
+  }
+  // 按 tag 分组
+  const groupOrder = [undefined, "运动", "社团", "食堂", "购物", "风险"];
+  const groupLabel = {
+    undefined:"📚 学习/日常",
+    "运动":"⚽ 运动",
+    "社团":"🎭 社团",
+    "食堂":"🍚 食堂",
+    "购物":"🛒 购物（世纪星/报刊亭）",
+    "风险":"⚡ 风险行动",
+  };
+  // 添加分类标签
+  groupOrder.forEach(g => {
+    const items = list.filter(a => (a.tag||undefined) === g);
+    if (!items.length) return;
+    const lbl = document.createElement("div");
+    lbl.className = "action-group-label";
+    lbl.textContent = `[ ${groupLabel[g]} ]`;
+    bar.appendChild(lbl);
+    items.forEach(a => bar.appendChild(makeActionBtn(a)));
+  });
+  updateActionAvailability();
+}
+
+function makeActionBtn(a) {
+  const btn = document.createElement("button");
+  btn.className = "action-btn";
+  btn.dataset.id = a.id;
+  let effStr = "";
+  if (a.eff) {
+    effStr = Object.keys(a.eff).map(k => {
+      const v = a.eff[k];
+      const sign = v >= 0 ? "+" : "";
+      const name = ATTRS.find(x => x.key === k)?.name || k;
+      return `${name}${sign}${v}`;
+    }).join(" ");
+  }
+  let costStr = a.cost ? ` · 花${a.cost.money||0}元` : "";
+  btn.innerHTML = `<div class="act-name">${a.name}</div><div class="act-eff">${effStr}${costStr}</div>`;
+  btn.onclick = () => onActionClick(a);
+  return btn;
+}
+
+function updateActionAvailability() {
+  const btns = document.querySelectorAll(".action-btn");
+  btns.forEach(btn => {
+    const id = btn.dataset.id;
+    const a = ACTIONS.find(x => x.id === id);
+    if (!a) return;
+    let disabled = false;
+    if (a.cost && a.cost.money && (state.attrs.money||0) < a.cost.money) disabled = true;
+    btn.disabled = disabled;
+  });
+}
+
+function hideActionBar() {
+  document.getElementById("action-bar").innerHTML = "";
+}
+
+function onActionClick(action) {
+  if (state.phase !== "freeAction") return;
+  // 检查花费
+  if (action.cost && action.cost.money && (state.attrs.money||0) < action.cost.money) {
+    showToast([{name:"零花钱不足", v:0}]);
+    return;
+  }
+  // 如果行动支持同伴选择，先选同伴
+  if (action.companion && !action._skipCompanion) {
+    showCompanionPicker(action);
+    return;
+  }
+  // 扣除花费
+  if (action.cost && action.cost.money) state.attrs.money -= action.cost.money;
+  // 处理特殊效果
+  if (action.special === "lottery") {
+    // 买彩票：30%概率中奖
+    const win = Math.random() < 0.3;
+    if (win) {
+      const prizes = [10, 20, 50, 100, 200, 500];
+      const prize = prizes[Math.floor(Math.random()*prizes.length)];
+      state.attrs.money = (state.attrs.money||0) + prize;
+      showToast([{name:`中奖！+${prize}元`, v:prize}]);
+      addNarrationToDialogue(`你刮开彩票——中了 ${prize} 元！`);
+    } else {
+      showToast([{name:"没中奖", v:0}]);
+      addNarrationToDialogue(`你刮开彩票——"谢谢惠顾"。`);
+    }
+  } else if (action.id === "buy_phone" || action.id === "buy_itouch") {
+    const item = action.id === "buy_phone" ? "📱 手机" : "🎧 iTouch";
+    addNarrationToDialogue(`你偷偷买下${item}，藏在书包最深处……回家再慢慢玩。`);
+  } else if (action.special === "borrow_phone") {
+    // 借同学手机玩：30%概率被老师没收
+    const caught = Math.random() < 0.30;
+    if (caught) {
+      const fine = 50;
+      state.attrs.money = Math.max(0, (state.attrs.money||0) - fine);
+      state.attrs.intelligence = Math.max(0, (state.attrs.intelligence||0) - 2);
+      state.attrs.stress = (state.attrs.stress||0) + 5;
+      showToast([{name:`被没收！-${fine}元`, v:-fine}]);
+      addNarrationToDialogue(`📵 上课偷玩被老师逮个正着，手机被没收！家长来校领人，被骂了一顿。零花钱 -${fine}，智力 -2，压力 +5。`);
+      // 不应用原本的好效果
+      advanceTime();
+      return;
+    } else {
+      addNarrationToDialogue(`🤳 你偷偷借了同学的手机玩了一把，没被发现，刺激！`);
+    }
+  } else if (action.special === "sneak_netbar") {
+    // 半夜溜去网吧：25%概率被抓
+    const caught = Math.random() < 0.25;
+    if (caught) {
+      const fine = 100;
+      state.attrs.money = Math.max(0, (state.attrs.money||0) - fine);
+      state.attrs.intelligence = Math.max(0, (state.attrs.intelligence||0) - 3);
+      state.attrs.math = Math.max(0, (state.attrs.math||0) - 2);
+      state.attrs.english = Math.max(0, (state.attrs.english||0) - 2);
+      state.attrs.stress = (state.attrs.stress||0) + 10;
+      showToast([{name:`被抓！-${fine}元`, v:-fine}]);
+      addNarrationToDialogue(`🚨 半夜溜去网吧，被宿管查寝发现！通报批评，家长被叫来学校。零花钱 -${fine}，智力 -3，数学/英语各 -2，压力 +10。`);
+      // 不应用原本的好效果
+      advanceTime();
+      return;
+    } else {
+      addNarrationToDialogue(`🌙 你翻墙溜出学校去网吧开黑，安全返回！刺激又过瘾。`);
+    }
+  }
+  applyEffects(action.eff);
+  // 推进时间
+  advanceTime();
+}
+
+/* ---------- 同伴选择系统 ---------- */
+/* 返回某角色对该行动的意愿："yes"/"no"/"maybe" */
+function getWillingness(charId, action) {
+  const c = CHARACTERS[charId];
+  if (!c) return "no";
+  if (charId === state.playerCharId) return "no"; // 不能选自己
+  const tag = action.tag || "";
+  const id = action.id;
+  // 食堂吃饭：所有人都愿意
+  if (tag === "食堂") return "yes";
+  // 学习类
+  if (id.startsWith("study") || id === "read_mag" || id === "buy_ref_book") {
+    // 好学生愿意，其他 50%
+    if (c.type === "学习型") return "yes";
+    if (c.dorm === "212" && c.hobby === "-") return "yes";
+    if (charId === "kuangruifeng" || charId === "zhaochenglin" || charId === "tangyufeng") return "yes";
+    if (c.hobby && c.hobby.includes("lol")) return "maybe";
+    return "maybe";
+  }
+  // 运动类
+  if (tag === "运动") {
+    if (c.hobby && (c.hobby.includes("足球") || c.hobby.includes("体育"))) return "yes";
+    if (c.type === "体育型") return "yes";
+    if (charId === "chenletian" || charId === "fengzihao" || charId === "husiren" || charId === "yinyuhao") return "yes";
+    return "maybe";
+  }
+  // 社团
+  if (tag === "社团") {
+    if (id === "club_xingyun") {
+      // 星云网络社：陈乐天、旷锐锋是核心
+      if (charId === "chenletian" || charId === "kuangruifeng") return "yes";
+      if (c.hobby && c.hobby.includes("lol")) return "yes";
+      return "maybe";
+    }
+    if (id === "club_radio") {
+      // 广播站：旷锐锋是核心
+      if (charId === "kuangruifeng") return "yes";
+      if (c.type === "文艺型") return "yes";
+      return "maybe";
+    }
+  }
+  // 风险行动
+  if (tag === "风险") {
+    if (id === "sneak_netbar") {
+      // 半夜溜网吧：只有 LOL爱好者/坏学生愿意
+      if (c.dorm === "213") return "yes"; // 213宿舍LOL氛围浓
+      if (c.hobby && c.hobby.includes("lol")) return "yes";
+      if (c.type === "社交型") return "maybe"; // 社交型女生可能叛逆
+      if (c.type === "学习型") return "no"; // 好学生拒绝
+      if (charId === "kuangruifeng" || charId === "zhaochenglin") return "no"; // 学霸/军校生拒绝
+      return "no";
+    }
+    if (id === "borrow_phone") {
+      // 借手机玩：LOL爱好者愿意
+      if (c.hobby && c.hobby.includes("lol")) return "yes";
+      if (c.dorm === "213") return "yes";
+      if (c.type === "社交型") return "maybe";
+      if (c.type === "学习型") return "no";
+      return "maybe";
+    }
+  }
+  // 打LOL
+  if (id === "lol") {
+    if (c.hobby && c.hobby.includes("lol")) return "yes";
+    if (c.dorm === "213" || c.dorm === "214") return "yes";
+    return "maybe";
+  }
+  // 看比赛
+  if (id === "watch_match") {
+    if (c.hobby && (c.hobby.includes("足球") || c.hobby.includes("lol"))) return "yes";
+    return "maybe";
+  }
+  // 聊天/买零食/买饮料：所有人都愿意
+  if (id === "chat" || id === "buy_snack" || id === "buy_drink") return "yes";
+  // 跑步
+  if (id === "run") {
+    if (charId === "chenletian" || charId === "yinyuhao" || charId === "zhaochenglin") return "yes";
+    return "maybe";
+  }
+  return "maybe";
+}
+
+/* 同伴回应台词 */
+function getCompanionResponse(charId, action, agreed) {
+  const c = CHARACTERS[charId];
+  const name = c ? c.name : "同学";
+  if (!agreed) {
+    // 拒绝台词
+    const refuseMap = {
+      "sneak_netbar": [
+        `${name}："半夜溜出去？不行，被发现了要通报批评的。"`,
+        `${name}："我才不去，被宿管抓到家长都要来学校。你自己去吧。"`,
+      ],
+      "borrow_phone": [
+        `${name}："手机我还要用呢，被没收了你赔？"`,
+        `${name}："上课玩手机？算了，我不冒这个险。"`,
+      ],
+      "study": [
+        `${name}："现在？我有点累了，下次吧。"`,
+      ],
+    };
+    const arr = refuseMap[action.id] || [`${name}："这次就不去了，你自己玩吧。"`];
+    return arr[Math.floor(Math.random()*arr.length)];
+  }
+  // 同意台词
+  const agreeMap = {
+    "eat_dacai": [`${name}："好啊，一起去食堂打菜。"`],
+    "eat_xiaochao": [`${name}："小炒不错，今天我请你！"`, `${name}："走，去吃小炒。"`],
+    "eat_treat": [`${name}："请我吃饭？那你今天得破费了😄"`],
+    "study": [`${name}："一起自习，互相监督。"`, `${name}："好，比着做题。"`],
+    "football": [`${name}："走，踢球去！"`],
+    "basketball": [`${name}："篮筐走起！"`],
+    "badminton": [`${name}："羽毛球双打，咱俩一队。"`],
+    "pingpong": [`${name}："乒乓桌见。"`],
+    "run": [`${name}："一起跑步，保持节奏。"`],
+    "lol": [`${name}："上分！我打野。"`],
+    "sneak_netbar": [`${name}："走，今晚翻墙！"`],
+    "borrow_phone": [`${name}："手机借你玩会儿，小心点。"`],
+    "chat": [`${name}："聊什么？最近如何？"`],
+    "buy_snack": [`${name}："正好饿了，一起买点。"`],
+    "buy_drink": [`${name}："走，请我喝一瓶。"`],
+  };
+  const arr = agreeMap[action.id] || [`${name}："好啊，一起。"`];
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+
+/* 显示同伴选择面板 */
+function showCompanionPicker(action) {
+  const da = document.getElementById("dialogue-area");
+  da.innerHTML = "";
+  // 标题
+  const title = document.createElement("div");
+  title.className = "narration";
+  title.textContent = `👥 ${action.name} —— 和谁一起？`;
+  da.appendChild(title);
+  // 提示
+  const hint = document.createElement("div");
+  hint.className = "narration";
+  hint.style.fontSize = "11px";
+  hint.style.color = "var(--text-dim)";
+  hint.textContent = "（不同人会有不同回应；好学生通常不会去网吧）";
+  da.appendChild(hint);
+  // 选择区
+  const choiceArea = document.getElementById("choice-area");
+  choiceArea.innerHTML = "";
+  choiceArea.style.display = "block";
+  // "独自一人"按钮
+  const aloneBtn = document.createElement("button");
+  aloneBtn.className = "choice-btn";
+  aloneBtn.textContent = "🚶 独自一人";
+  aloneBtn.style.marginBottom = "6px";
+  aloneBtn.onclick = () => {
+    choiceArea.innerHTML = "";
+    addNarrationToDialogue(`🚶 你独自${action.name}。`);
+    executeAction(action, null);
+  };
+  choiceArea.appendChild(aloneBtn);
+  // 候选角色：优先 KEY_CHARS 和同宿舍
+  const candidates = [];
+  Object.keys(CHARACTERS).forEach(id => {
+    if (id === state.playerCharId) return;
+    const c = CHARACTERS[id];
+    // 只显示部分关键角色 + 同宿舍 + 已有互动的
+    const isKey = KEY_CHARS.includes(id);
+    const isSameDorm = c.dorm && state.dorm && c.dorm === DORMS[state.dorm]?.name?.replace("宿舍","");
+    const aff = state.affections[id] || 0;
+    if (!isKey && !isSameDorm && aff < 10) return;
+    const w = getWillingness(id, action);
+    candidates.push({ id, c, w });
+  });
+  // 按意愿分组：愿意/可能/拒绝
+  const willing = candidates.filter(x => x.w === "yes");
+  const maybe = candidates.filter(x => x.w === "maybe");
+  const refuse = candidates.filter(x => x.w === "no");
+  // 渲染
+  if (willing.length) {
+    const lbl = document.createElement("div");
+    lbl.className = "group-label";
+    lbl.textContent = "✅ 愿意同行";
+    choiceArea.appendChild(lbl);
+    const grid = document.createElement("div");
+    grid.className = "char-grid";
+    willing.forEach(({id, c}) => {
+      grid.appendChild(makeCompanionBtn(id, c, action, "yes"));
+    });
+    choiceArea.appendChild(grid);
+  }
+  if (maybe.length) {
+    const lbl = document.createElement("div");
+    lbl.className = "group-label";
+    lbl.textContent = "❓ 看情况（可能拒绝）";
+    choiceArea.appendChild(lbl);
+    const grid = document.createElement("div");
+    grid.className = "char-grid";
+    maybe.forEach(({id, c}) => {
+      grid.appendChild(makeCompanionBtn(id, c, action, "maybe"));
+    });
+    choiceArea.appendChild(grid);
+  }
+  if (refuse.length) {
+    const lbl = document.createElement("div");
+    lbl.className = "group-label";
+    lbl.textContent = "❌ 不会答应";
+    choiceArea.appendChild(lbl);
+    const grid = document.createElement("div");
+    grid.className = "char-grid";
+    refuse.forEach(({id, c}) => {
+      grid.appendChild(makeCompanionBtn(id, c, action, "no"));
+    });
+    choiceArea.appendChild(grid);
+  }
+}
+
+function makeCompanionBtn(charId, c, action, willingness) {
+  const btn = document.createElement("button");
+  btn.className = "choice-btn";
+  const aff = state.affections[charId] || 0;
+  const tag = willingness === "yes" ? "✅" : (willingness === "maybe" ? "❓" : "❌");
+  const role = c.role ? `[${c.role}]` : "";
+  btn.innerHTML = `${tag} ${c.name} ${role} <span style="font-size:10px;color:var(--text-dim)">好感${aff}</span>`;
+  btn.style.marginBottom = "3px";
+  if (willingness === "no") btn.style.opacity = "0.5";
+  btn.onclick = () => {
+    document.getElementById("choice-area").innerHTML = "";
+    // 判断是否同意
+    let agreed = willingness === "yes";
+    if (willingness === "maybe") {
+      agreed = Math.random() < 0.5;
+    }
+    const resp = getCompanionResponse(charId, action, agreed);
+    addNarrationToDialogue(`🎭 ${resp}`);
+    if (agreed) {
+      // 同意：应用行动效果 + 好感度+2
+      executeAction(action, charId);
+    } else {
+      // 拒绝：玩家独自做（仍扣花费、推进时间，但效果减半）
+      if (action.cost && action.cost.money) state.attrs.money -= action.cost.money;
+      const halfEff = {};
+      if (action.eff) Object.keys(action.eff).forEach(k => halfEff[k] = Math.floor(action.eff[k] / 2));
+      applyEffects(halfEff);
+      addNarrationToDialogue(`🚶 ${c.name}不去了，你独自完成${action.name}。`);
+      advanceTime();
+    }
+  };
+  return btn;
+}
+
+/* 执行行动（含同伴加成） */
+function executeAction(action, companionId) {
+  // 扣除花费
+  if (action.cost && action.cost.money) state.attrs.money -= action.cost.money;
+  // 应用行动效果
+  if (action.eff) {
+    const eff = {...action.eff};
+    // 同伴加成：好感度+2，且若同伴属性高则加成
+    if (companionId) {
+      const bonusAff = 2;
+      eff[`${companionId}_affection`] = (eff[`${companionId}_affection`] || 0) + bonusAff;
+      // 同伴特长加成
+      const c = CHARACTERS[companionId];
+      if (c) {
+        if (c.hobby && c.hobby.includes("lol") && action.id === "lol") {
+          eff.lol_skill = (eff.lol_skill || 0) + 2;
+        }
+        if (c.hobby && c.hobby.includes("足球") && action.id === "football") {
+          eff.football = (eff.football || 0) + 2;
+        }
+        if (c.type === "学习型" && action.id && action.id.startsWith("study")) {
+          eff.intelligence = (eff.intelligence || 0) + 1;
+        }
+      }
+    }
+    applyEffects(eff);
+  }
+  // 处理特殊效果（lottery/borrow_phone/sneak_netbar）
+  if (action.special === "lottery") {
+    const win = Math.random() < 0.3;
+    if (win) {
+      const prizes = [10, 20, 50, 100, 200, 500];
+      const prize = prizes[Math.floor(Math.random()*prizes.length)];
+      state.attrs.money = (state.attrs.money||0) + prize;
+      showToast([{name:`中奖！+${prize}元`, v:prize}]);
+      addNarrationToDialogue(`你刮开彩票——中了 ${prize} 元！`);
+    } else {
+      showToast([{name:"没中奖", v:0}]);
+      addNarrationToDialogue(`你刮开彩票——"谢谢惠顾"。`);
+    }
+  } else if (action.special === "borrow_phone") {
+    const caught = Math.random() < 0.30;
+    if (caught) {
+      const fine = 50;
+      state.attrs.money = Math.max(0, (state.attrs.money||0) - fine);
+      state.attrs.intelligence = Math.max(0, (state.attrs.intelligence||0) - 2);
+      state.attrs.stress = (state.attrs.stress||0) + 5;
+      showToast([{name:`被没收！-${fine}元`, v:-fine}]);
+      addNarrationToDialogue(`📵 上课偷玩被老师逮个正着，手机被没收！家长来校领人，被骂了一顿。零花钱 -${fine}，智力 -2，压力 +5。`);
+      advanceTime();
+      return;
+    }
+  } else if (action.special === "sneak_netbar") {
+    const caught = Math.random() < 0.25;
+    if (caught) {
+      const fine = 100;
+      state.attrs.money = Math.max(0, (state.attrs.money||0) - fine);
+      state.attrs.intelligence = Math.max(0, (state.attrs.intelligence||0) - 3);
+      state.attrs.math = Math.max(0, (state.attrs.math||0) - 2);
+      state.attrs.english = Math.max(0, (state.attrs.english||0) - 2);
+      state.attrs.stress = (state.attrs.stress||0) + 10;
+      showToast([{name:`被抓！-${fine}元`, v:-fine}]);
+      addNarrationToDialogue(`🚨 半夜溜去网吧，被宿管查寝发现！通报批评，家长被叫来学校。零花钱 -${fine}，智力 -3，数学/英语各 -2，压力 +10。`);
+      advanceTime();
+      return;
+    }
+  }
+  advanceTime();
+}
+
+function addNarrationToDialogue(text) {
+  const da = document.getElementById("dialogue-area");
+  const d = document.createElement("div");
+  d.className = "narration";
+  d.textContent = text;
+  da.appendChild(d);
+  da.scrollTop = da.scrollHeight;
+}
+
+/* ---------- 时间推进 ---------- */
+function advanceTime() {
+  state.slot++;
+  let dayChanged = false;
+  if (state.slot >= 5) {
+    state.slot = 0;
+    state.day++;
+    dayChanged = true;
+    // 每天结束：压力微调（睡眠恢复）
+    if ((state.attrs.stress||0) > 0) state.attrs.stress = Math.max(0, state.attrs.stress - 2);
+    if ((state.attrs.stamina||0) < 100) state.attrs.stamina = Math.min(100, state.attrs.stamina + 5);
+  }
+  // 每月固定发放零花钱 100 元（月份变化时）
+  const curMonth = getCurMonth();
+  if (curMonth !== state.lastAllowanceMonth) {
+    state.attrs.money = (state.attrs.money||0) + 100;
+    state.lastAllowanceMonth = curMonth;
+    addNarrationToDialogue(`📅 月初，家长给了 100 元零花钱。`);
+  }
+  renderTopbar();
+  renderAttrs();
+  // 高考前最后冲刺触发
+  if (maybeTriggerGaokao()) return;
+  // 考试系统触发（月考/期中/期末/模拟考）
+  if (dayChanged && tryTriggerExam()) return;
+  // 触发章节事件
+  if (!checkChapterTrigger()) {
+    // 普通时段继续
+    if (state.phase === "freeAction") {
+      document.getElementById("dialogue-area").innerHTML = `<div class="narration">▸ ${getTimeFlavorText()}</div>`;
+      document.getElementById("choice-area").innerHTML = "";
+      renderActionBar();
+    }
+  }
+}
+
+/* ---------- 当前月份 ---------- */
+function getCurMonth() {
+  const start = new Date(2013, 8, 1);
+  const cur = new Date(start);
+  cur.setDate(start.getDate() + state.day - 1);
+  return cur.getMonth() + 1; // 1-12
+}
+
+/* ---------- 当前年份 ---------- */
+function getCurYear() {
+  const start = new Date(2013, 8, 1);
+  const cur = new Date(start);
+  cur.setDate(start.getDate() + state.day - 1);
+  return cur.getFullYear();
+}
+
+/* ---------- 考试系统 ---------- */
+function tryTriggerExam() {
+  // 仅在自由行动阶段触发
+  if (state.phase !== "freeAction") return false;
+  if (!state.flags.prologueComplete) return false;
+  if (state.flags.ch4Complete) return false; // 高考后不再月考
+  const month = getCurMonth();
+  const year = getCurYear();
+  const day = getCurDayOfMonth();
+  // 每月15日左右月考（1月、6月避开期末/高考期）
+  // 期中：每学期中间（约11月、4月）
+  // 期末：每学期末（约1月、6月）
+  // 高三模拟考：9月、12月、3月、5月
+  let examType = null;
+  if (day === 15) {
+    if (month === 1) examType = "期末考";
+    else if (month === 6) examType = "期末考";
+    else if (month === 11) examType = "期中考试";
+    else if (month === 4) examType = "期中考试";
+    else if (year === 2015 && (month === 9 || month === 12 || month === 3 || month === 5)) examType = "高三模拟考";
+    else examType = "月考";
+  }
+  if (!examType) return false;
+  // 避免同一天重复触发
+  if (state._lastExamDay === state.day) return false;
+  state._lastExamDay = state.day;
+  triggerExamScene(examType);
+  return true;
+}
+
+function getCurDayOfMonth() {
+  const start = new Date(2013, 8, 1);
+  const cur = new Date(start);
+  cur.setDate(start.getDate() + state.day - 1);
+  return cur.getDate();
+}
+
+function triggerExamScene(examType) {
+  state.phase = "scene";
+  hideActionBar();
+  const a = state.attrs;
+  // 成绩计算：基础(各科加权) + 智力加成 - 压力减成 + 随机扰动
+  const base = (a.chinese * 1.0 + a.math * 1.2 + a.english * 1.0 + a.comprehensive * 2.8);
+  const intelBonus = (a.intelligence - 30) * 1.5;
+  const stressPenalty = (a.stress || 0) * 0.5;
+  const staminaBonus = (a.stamina - 50) * 0.3;
+  const noise = (Math.random() * 40 - 20); // ±20随机
+  const total = Math.max(0, Math.round(base + intelBonus + staminaBonus - stressPenalty + noise));
+  const prev = state.lastExamScore;
+  const diff = total - prev;
+  state.lastExamScore = total;
+  state.examCount++;
+  // 计算奖励
+  let reward = 0;
+  let rewardAttrs = [];
+  if (diff > 0) {
+    // 提升：每提升10分奖励20元零花钱+智力1
+    const tiers = Math.floor(diff / 10);
+    reward = tiers * 20;
+    if (reward > 0) {
+      state.attrs.money = (state.attrs.money || 0) + reward;
+      rewardAttrs.push(`💰 +${reward}元`);
+    }
+    if (tiers >= 1) {
+      state.attrs.intelligence = Math.min(100, (state.attrs.intelligence||0) + tiers);
+      rewardAttrs.push(`🧠 智力+${tiers}`);
+    }
+    if (tiers >= 3) {
+      state.attrs.stress = Math.max(0, (state.attrs.stress||0) - 5);
+      rewardAttrs.push("😌 压力-5");
+    }
+  }
+  // 显示考试结果
+  const lines = [];
+  lines.push({ speaker: "📖", text: `【${examType}】成绩公布：本次总分 ${total} 分。` });
+  if (prev > 0) {
+    if (diff > 0) lines.push({ speaker: "📊", text: `较上次提升 ${diff} 分！` + (rewardAttrs.length ? `奖励：${rewardAttrs.join("，")}。` : "") });
+    else if (diff < 0) lines.push({ speaker: "📊", text: `较上次下降 ${Math.abs(diff)} 分。继续努力。` });
+    else lines.push({ speaker: "📊", text: `与上次持平。` });
+  } else {
+    lines.push({ speaker: "📊", text: `这是你的首次考试，分数已记录。` });
+  }
+  // 排名（粗略）
+  const rank = Math.max(1, Math.round(60 - total / 10 + Math.random() * 5));
+  lines.push({ speaker: "🏫", text: `年级排名：约 ${rank} 名。` + (rank <= 10 ? "🏆 不错！" : "") });
+  if (diff > 20) lines.push({ speaker: "👨‍🏫", text: `老张："进步神速，继续保持！"` });
+  else if (diff < -20) lines.push({ speaker: "👨‍🏫", text: `老张："最近心思不在学习上？注意调整。"` });
+  // 推进到结局画面
+  lines.push({ speaker: "", text: "▸ 考试结束，回到日常。" });
+  playSceneInline(lines);
+}
+
+/* 在自由行动中临时播放一个简单场景 */
+function playSceneInline(lines) {
+  // 用临时场景机制：渲染对话，结束后回到freeAction
+  const da = document.getElementById("dialogue-area");
+  da.innerHTML = "";
+  state._inlineSceneQueue = lines.slice();
+  state._inlineSceneResume = "freeAction";
+  showNextInlineLine();
+}
+
+function showNextInlineLine() {
+  const da = document.getElementById("dialogue-area");
+  if (!state._inlineSceneQueue || !state._inlineSceneQueue.length) {
+    // 结束，回到自由行动
+    state.phase = "freeAction";
+    renderTopbar();
+    renderAttrs();
+    renderChars();
+    renderActionBar();
+    document.getElementById("dialogue-area").innerHTML = `<div class="narration">▸ ${getTimeFlavorText()}</div>`;
+    return;
+  }
+  const line = state._inlineSceneQueue.shift();
+  const div = document.createElement("div");
+  if (line.speaker) {
+    div.className = "dialogue";
+    div.innerHTML = `<span class="speaker">${line.speaker}</span><span class="text">${line.text}</span>`;
+  } else {
+    div.className = "narration";
+    div.textContent = line.text;
+  }
+  da.innerHTML = "";
+  da.appendChild(div);
+  // 显示"继续"按钮
+  const btnRow = document.createElement("div");
+  btnRow.className = "choice-row";
+  const btn = document.createElement("button");
+  btn.className = "choice-btn";
+  btn.textContent = "继续 ▶";
+  btn.onclick = () => showNextInlineLine();
+  btnRow.appendChild(btn);
+  da.appendChild(btnRow);
+}
+
+function getTimeFlavorText() {
+  const slot = state.slot;
+  const flavors = [
+    "清晨5:30，跑操铃声响起。新的一天开始了。",
+    "上午，第三节课。窗外阳光正好。",
+    "下午，第七节课。操场上有人在踢球。",
+    "晚自习。教室安静，只有翻书声。",
+    "深夜11点。宿舍熄灯了。",
+  ];
+  return flavors[slot] || "时间在流逝。";
+}
+
+/* ---------- 章节触发检查 ---------- */
+function checkChapterTrigger() {
+  // 序章完成 → 进入第一章日常（自由若干时段后触发ch1_01）
+  if (state.flags.prologueComplete && !state.flags.ch1Complete) {
+    // 第一天上午触发ch1_01
+    if (state.day >= 2 && state.slot === 0) {
+      state.phase = "scene";
+      hideActionBar();
+      playScene("ch1_01");
+      return true;
+    }
+  }
+  // 第一章完成 → 第二章世界杯（2014.06触发）
+  if (state.flags.ch1Complete && !state.flags.ch2Complete) {
+    // 简化：玩家自由行动3天后触发
+    if (state.day >= 5) {
+      state.phase = "scene";
+      hideActionBar();
+      playScene("ch2_01");
+      return true;
+    }
+  }
+  // 第二章完成 → 第三章S4（2014.09）
+  if (state.flags.ch2Complete && !state.flags.ch3Complete) {
+    if (state.day >= 8) {
+      state.phase = "scene";
+      hideActionBar();
+      playScene("ch3_01");
+      return true;
+    }
+  }
+  // 第三章完成 → 终章高三
+  if (state.flags.ch3Complete && !state.flags.ch4Complete) {
+    if (state.day >= 11) {
+      state.phase = "scene";
+      hideActionBar();
+      playScene("ch4_01");
+      return true;
+    }
+  }
+  // 高考前最后冲刺
+  if (state.flags.ch4Complete === false && state.flags.ch3Complete && state.day >= 11) {
+    // 已在ch4_01播放后进入finalPrep
+  }
+  return false;
+}
+
+function enterFinalPrepAfterCh4_01() {
+  // 高考前最后一波自由行动
+  enterFinalPrep();
+  // 监听：再过3天触发高考
+  state._finalPrepStart = state.day;
+}
+
+/* ---------- 高考触发 ---------- */
+function maybeTriggerGaokao() {
+  if (state.flags.ch3Complete && !state.flags.ch4Complete) {
+    if (state._finalPrepStart && state.day - state._finalPrepStart >= 3) {
+      state.phase = "scene";
+      hideActionBar();
+      state.flags.ch4Complete = true;
+      state.chapter = 5;
+      renderTopbar();
+      playScene("ch4_02");
+      return true;
+    }
+  }
+  return false;
+}
+
+/* ---------- 结局计算 ---------- */
+function calculateFinalScore() {
+  const a = state.attrs;
+  let base = (a.chinese * 1.5 + a.math * 1.5 + a.english * 1.5 + a.comprehensive * 3);
+  let mod = 0;
+  let modBreakdown = [];
+  if (a.intelligence >= 90) { mod += 30; modBreakdown.push("智力≥90 +30"); }
+  else if (a.intelligence <= 40) { mod -= 40; modBreakdown.push("智力≤40 -40"); }
+  if (a.math >= 90) { mod += 20; modBreakdown.push("数学≥90 +20"); }
+  if (a.english >= 90) { mod += 15; modBreakdown.push("英语≥90 +15"); }
+  if (a.stress <= 30) { mod += 20; modBreakdown.push("压力≤30 +20"); }
+  else if (a.stress >= 90) { mod -= 50; modBreakdown.push("压力≥90 -50"); }
+  if (a.stamina >= 80) { mod += 10; modBreakdown.push("体力≥80 +10"); }
+  else if (a.stamina <= 20) { mod -= 30; modBreakdown.push("体力≤20 -30"); }
+  const maxAff = Math.max(0, ...Object.values(state.affections));
+  if (maxAff >= 80) { mod += 15; modBreakdown.push("存在好感度≥80 +15"); }
+  if (state.flags.worldCupWatched) { mod += 5; modBreakdown.push("看过世界杯 +5"); }
+  if (state.flags.s4Watched) { mod += 5; modBreakdown.push("看过S4 +5"); }
+  if (state.flags.dropoutEvent) { mod -= 100; modBreakdown.push("退学事件 -100"); }
+  return { base: Math.round(base), mod: Math.round(mod), total: Math.round(base + mod), modBreakdown, maxAff };
+}
+
+function getEnding(score) {
+  const t = score.total;
+  if (t >= 700) return { tier:"顶级985", name:"金榜题名·清北", text:"你考上了清华大学/北京大学。423班的红榜上，你的名字在最前面。老张激动得差点落泪。", univ:"清华/北大" };
+  if (t >= 650) return { tier:"985", name:"金榜题名·985", text:"你考上了985重点大学。老张在谢师宴上喝多了，说你是他的骄傲。", univ:"北邮/北理工/吉林大学" };
+  if (t >= 600) return { tier:"211", name:"金榜题名·211", text:"你考上了211大学。虽然不是顶尖，但已经足够让家人骄傲。", univ:"中国地质大学/太原理工" };
+  if (t >= 550) return { tier:"一本", name:"稳稳的幸福", text:"你考上了一所不错的本科。不算惊喜，但也不算遗憾。", univ:"长沙理工/湖南科技" };
+  if (t >= 500) return { tier:"二本", name:"稳稳的幸福", text:"你考上了一所普通本科。不算惊喜，但也不算遗憾。", univ:"湖南商学院/湖南工程学院" };
+  if (t >= 450) return { tier:"三本", name:"平凡之路", text:"你上了一所独立学院。但你知道，这只是另一段路的开始。", univ:"湖南涉外经济学院" };
+  if (t >= 300) return { tier:"专科", name:"另一条路", text:"你上了专科。但你知道，这不是终点。", univ:"株洲铁道/长沙商贸" };
+  return { tier:"落榜", name:"来年再战", text:"你落榜了。你选择了复读。423班有5个人和你一样，你们成了第6个，互相约定明年再见。", univ:"复读" };
+}
+
+function getExtraEndings(score) {
+  const extras = [];
+  const a = state.attrs;
+  // 感情结局
+  if ((state.affections.caozhuoer||0) >= 80 && score.total >= 500)
+    extras.push("你和曹卓尔考上了同一座城市的大学。你们的故事，才刚刚开始。");
+  if ((state.affections.yangling||0) >= 80 && score.total >= 500)
+    extras.push("你和杨玲考上了长沙的大学。周末的五一广场，经常能看到你们。");
+  // 兄弟结局
+  const maleAffs = ["kuangruifeng","liuwangjing","chenhao","liugangpeng","husiren","fengzihao"].map(id => state.affections[id]||0);
+  if (maleAffs.every(v => v >= 40))
+    extras.push("423班的兄弟们，后来组了一个微信群。每年暑假，你们都会回县一中踢一场球。");
+  // 兴趣结局
+  if (a.lol_skill >= 80)
+    extras.push("你加入了大学电竞社。2018年LPL夺冠那晚，你在宿舍里哭了。");
+  if (a.football >= 80)
+    extras.push("你成了大学足球队的主力。2014年世界杯的那个夏天，永远留在记忆里。");
+  // 宿舍结局
+  if (state.dorm === "dorm_212" && (state.affections.kuangruifeng||0) >= 60)
+    extras.push("212宿舍的9个人，后来分散在北京、南京、武汉、西安。但每年春节，旷锐锋都会在QQ群里发红包。");
+  if (state.dorm === "dorm_213" && (state.affections.chenhao||0) >= 60)
+    extras.push("213宿舍的LOL战队，后来在大学里继续开黑。2018年LPL夺冠那晚，他们在群里刷了一整夜的消息。");
+  if (state.dorm === "dorm_214" && (state.affections.zhaochenglin||0) >= 60)
+    extras.push("214宿舍的人后来各奔东西——有人去了军校，有人复读，有人参军。但每年寒假，他们都会回县一中看老张。");
+  // 孤独结局
+  const allAffs = Object.values(state.affections);
+  if (allAffs.every(v => v < 30))
+    extras.push("三年过去了，你发现自己除了做题，什么都没有留下。");
+  return extras;
+}
+
+function showEnding() {
+  const score = calculateFinalScore();
+  const ending = getEnding(score);
+  const extras = getExtraEndings(score);
+  state.phase = "ended";
+  document.getElementById("game-screen").classList.remove("active");
+  const es = document.getElementById("end-screen");
+  es.classList.add("active");
+  // 玩家姓名与参考大学对比
+  const pc = state.playerCharId ? CHARACTERS[state.playerCharId] : null;
+  const playerName = pc ? pc.name : "我";
+  const refUniv = pc ? pc.ref : null;
+  document.getElementById("ending-title").textContent = `${playerName} · ${ending.name}`;
+  let tierLine = `【${ending.tier} · 录取:${ending.univ}】`;
+  if (refUniv && refUniv !== "—" && refUniv !== "来年再战") {
+    // 对比参考大学
+    const tierRank = {"顶级985":8,"985":7,"211":6,"一本":5,"二本":4,"三本":3,"专科":2,"落榜":1};
+    const myRank = tierRank[ending.tier] || 0;
+    // 简化：根据分数差距判断
+    let cmp = "";
+    if (score.total >= 700) cmp = `↑ 远超参考线「${refUniv}」`;
+    else if (score.total >= 600) cmp = `↑ 超越参考线「${refUniv}」`;
+    else if (score.total >= 450) cmp = `≈ 持平参考线「${refUniv}」`;
+    else cmp = `↓ 低于参考线「${refUniv}」`;
+    tierLine += `\n${cmp}`;
+  } else if (refUniv === "来年再战") {
+    tierLine += `\n（参考线：来年再战）`;
+  }
+  document.getElementById("ending-tier").textContent = tierLine;
+  document.getElementById("ending-text").textContent = `${ending.text}`;
+  document.getElementById("ending-stats").innerHTML = `
+    <span>基础分 <b>${score.base}</b></span>
+    <span>修正 <b>${score.mod >= 0 ? "+" : ""}${score.mod}</b></span>
+    <span>总分 <b>${score.total}</b></span>
+  `;
+  let exHtml = "";
+  if (pc) exHtml += `<div class="extra-line">▸ 你扮演的是 <b style="color:var(--green-bright)">${playerName}</b>（学号${state.playerCharId}），参考大学：${refUniv||"—"}，宿舍：${DORMS[state.dorm]?.name||state.dorm}</div>`;
+  if (extras.length === 0) exHtml += `<div class="extra-line">（没有额外结局触发）</div>`;
+  else extras.forEach(e => exHtml += `<div class="extra-line">▸ ${e}</div>`);
+  // 修正明细
+  if (score.modBreakdown && score.modBreakdown.length) {
+    exHtml += `<div class="extra-line" style="color:var(--text-dim);font-size:11px;">▸ 修正明细：${score.modBreakdown.join(" / ")}</div>`;
+  }
+  document.getElementById("ending-extras").innerHTML = exHtml;
+}
+
+/* ---------- 启动 ---------- */
+document.getElementById("btn-start").onclick = () => {
+  document.getElementById("start-screen").style.display = "none";
+  document.getElementById("game-screen").classList.add("active");
+  initState();
+  renderTopbar();
+  renderAttrs();
+  renderChars();
+  startPrologue();
+};
+
+document.getElementById("btn-restart").onclick = () => {
+  document.getElementById("end-screen").classList.remove("active");
+  document.getElementById("start-screen").style.display = "flex";
+};
+
+/* 初始化 */
+initState();
+</script>
+</body>
+</html>
